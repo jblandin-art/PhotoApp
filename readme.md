@@ -1,9 +1,11 @@
-# \<Project Name\> Scrum Team
+# Photo App Scrum Team
 ## Product Owner
-\<Team Member Name\>
+Natalia Dudley
 ## Scrum Master
-\<Team Member Name\>
+Josiah Blanding
 ## Developers
-- \<Team Member Name\>
-- \<Team Member Name\>
-- \<Team Member Name\>
+- Josiah Blanding
+- Joshua Jaico
+- Larry Whitworth
+- Abhi Ankhem
+- Natalia Dudley
