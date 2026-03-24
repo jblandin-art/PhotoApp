@@ -5,9 +5,12 @@ import {
   ListItem,
   ListItemText,
   Typography,
+  ListItemButton
 }
 from '@mui/material';
 import './userList.css';
+import { UseParams, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
 /**
  * Define UserList, a React component of project #5
@@ -15,6 +18,13 @@ import './userList.css';
 class UserList extends React.Component {
   constructor(props) {
     super(props);
+    const hash = window.location.hash;          // "#/users/123"
+    const match = hash.match(/\/users\/(\w+)/); // regex to extract userId
+    const userId = match ? match[1] : null;     // "123" or null if not on a user page
+    this.state = {
+        users: window.models.userListModel(),
+        selectedUserId: userId
+    }
   }
 
   render() {
@@ -26,18 +36,25 @@ class UserList extends React.Component {
           display your users like so:
         </Typography>
         <List component="nav">
-          <ListItem>
-            <ListItemText primary="Item #1" />
-          </ListItem>
-          <Divider />
-          <ListItem>
-            <ListItemText primary="Item #2" />
-          </ListItem>
-          <Divider />
-          <ListItem>
-            <ListItemText primary="Item #3" />
-          </ListItem>
-          <Divider />
+          {
+            this.state.users.map((user) => {
+            return (
+              <div key={user._id}>
+                <ListItem>
+                  <ListItemButton 
+                  component={Link} 
+                  to={`/users/${user._id}`} 
+                  selected={this.state.selectedUserId === user._id} 
+                  onClick={() => this.setState({ selectedUserId: user._id })}
+            >
+                    <ListItemText primary={`${user.first_name} ${user.last_name}`} />
+                  </ListItemButton>
+                </ListItem>
+                <Divider />
+              </div>
+            )
+            })
+            }
         </List>
         <Typography variant="body1">
           The model comes in from window.models.userListModel()
@@ -47,4 +64,4 @@ class UserList extends React.Component {
   }
 }
 
-export default UserList;
+export default withRouter(UserList);
