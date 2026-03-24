@@ -10,6 +10,7 @@ import {
 from '@mui/material';
 import './userList.css';
 import { Link, withRouter } from 'react-router-dom';
+import fetchModel from '../../lib/fetchModelData';
 
 /**
  * Define UserList, a React component of project #5
@@ -21,10 +22,21 @@ class UserList extends React.Component {
     const match = hash.match(/\/users\/(\w+)/); // regex to extract userId
     const userId = match ? match[1] : null;     // "123" or null if not on a user page
     this.state = {
-        users: window.models.userListModel(),
+        users: [],
         selectedUserId: userId
     };
   }
+
+  componentDidMount() {
+  fetchModel('/user/list')
+    .then((data) => {
+      console.log("Fetched data:", data);
+      this.setState({ users: data.data });
+    })
+    .catch((err) => {
+      console.error("Error fetching users:", err);
+    });
+}
 
   componentDidUpdate(){
     const hash = window.location.hash;          // "#/users/123"
@@ -65,7 +77,7 @@ class UserList extends React.Component {
             }
         </List>
         <Typography variant="body1">
-          The model comes in from window.models.userListModel()
+          The model have been modified to come in from fetchData()
         </Typography>
       </div>
     );
