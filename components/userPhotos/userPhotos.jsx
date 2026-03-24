@@ -59,7 +59,7 @@ class UserPhotos extends React.Component {
                     <Typography variant="body1" style={{ marginTop: '5px' }}>
                       {comment.comment}
                     </Typography>
-                    <Divider variant="inset" component="li" style={{ width: '100%', margin: '10px 0' }} />
+                    <Divider variant="inset" style={{ width: '100%', margin: '10px 0' }} />
                   </ListItem>
                 )) : <Typography variant="body2">No comments yet.</Typography>}
               </List>

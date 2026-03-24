@@ -15,31 +15,34 @@ class UserDetail extends React.Component {
     super(props);
     this.state= {user: undefined};
     this.userId = this.props.match.params.userId;
+    this._isMounted = false;
   }
   
-componentDidMount(){
-const userId = this.props.match.params.userId;
+componentDidMount() {
+    const userId = this.props.match.params.userId;
+    this._isMounted = true;
+    fetchModel(`/user/${userId}`).then((data) => {
+      if (this._isMounted) {
+        this.setState({ userData: data });
+      }
+    });
+  }
 
-  fetchModel(`/user/${userId}`)
-  .then((response) => {
-    this.setState({user: response.data});
-  })
-  .catch((err) => {
-    console.error("Error fetching user:", err);
-  });
-}
+  componentWillUnmount() {
+    this._isMounted = false;
+  }
 
-componentDidUpdate(){
-const userId = this.props.match.params.userId;
+  componentDidUpdate(){
+    const userId = this.props.match.params.userId;
 
-  fetchModel(`/user/${userId}`)
-  .then((response) => {
-    this.setState({user: response.data});
-  })
-  .catch((err) => {
-    console.error("Error fetching user:", err);
-  });
-}
+      fetchModel(`/user/${userId}`)
+      .then((response) => {
+        this.setState({user: response.data});
+      })
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
+  }
 
   
   render() {

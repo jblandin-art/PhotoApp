@@ -27,6 +27,15 @@ class UserList extends React.Component {
     }
   }
 
+  componentDidUpdate(){
+    const hash = window.location.hash;          // "#/users/123"
+    const match = hash.match(/\/users\/(\w+)/);
+    const userId = match ? match[1] : null;     // "123" or null if not on a user page
+    if (userId !== this.state.selectedUserId) {   // <-- important check!
+    this.setState({ selectedUserId: userId });
+    }
+  }
+
   render() {
     return (
       <div>
@@ -39,7 +48,7 @@ class UserList extends React.Component {
           {
             this.state.users.map((user) => {
             return (
-              <div key={user._id}>
+              <React.Fragment key={user._id}>
                 <ListItem>
                   <ListItemButton 
                   component={Link} 
@@ -51,7 +60,7 @@ class UserList extends React.Component {
                   </ListItemButton>
                 </ListItem>
                 <Divider />
-              </div>
+              </React.Fragment>
             )
             })
             }
