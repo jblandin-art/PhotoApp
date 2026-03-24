@@ -30,7 +30,6 @@ class UserList extends React.Component {
   componentDidMount() {
   fetchModel('/user/list')
     .then((data) => {
-      console.log("Fetched data:", data);
       this.setState({ users: data.data });
     })
     .catch((err) => {
