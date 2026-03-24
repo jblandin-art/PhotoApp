@@ -16,9 +16,18 @@ class TopBar extends React.Component {
     return (
       <AppBar className="topbar-appBar" position="absolute">
         <Toolbar>
+          <Grid container justifyContent="space-between" alignItems="center">
+          <Grid item>
           <Typography variant="h5" color="inherit">
-              This is the TopBar component
+              [Name]
           </Typography>
+          </Grid>
+            
+          <Grid item>
+            <Typography variant="h5" color="inherit">
+            </Typography>
+          </Grid>
+          </Grid>
         </Toolbar>
       </AppBar>
     );
