@@ -24,15 +24,14 @@ class TopBar extends React.Component {
       fetchModel("/testinfo")
       .then.setState({
         app_info: response.data
-    });
-  })
-    .catch((err) => console.error("Error fetching app info:", err));
+    }).catch((err) => console.error("Error fetching app info:", err));
+  } }
 
   render() {
     return this.state.app_info ?(
       <AppBar className="topbar-appBar" position="absolute">
         <Toolbar>
-          <Grid container justifyContent="space-between alignItems="center">
+          <Grid container justifyContent="space-between" alignItems="center">
 
           <Grid item>
             <Typography variant="h5" color="inherit">
@@ -44,9 +43,10 @@ class TopBar extends React.Component {
             <Typography variant="h5" color="inherit">
             </Typography> 
           </Grid>
+          </Grid>
         </Toolbar>
       </AppBar>
-    );
+    ) : null;
   }
 }
 
