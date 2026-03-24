@@ -14,7 +14,6 @@ class TopBar extends React.Component {
   }
 
   componentDidMount() {
-    this.handleAppInfoChange();
     this.updateContext();
   }
 
@@ -22,14 +21,6 @@ class TopBar extends React.Component {
     if (this.props.location.pathname !== prevProps.location.pathname) {
       this.updateContext();
     }
-  }
-
-  handleAppInfoChange() {
-    fetchModel("/testinfo")
-      .then((response) => {
-        this.setState({ app_info: response.data });
-      })
-      .catch((err) => console.error("Error fetching app info:", err));
   }
 
   updateContext() {
