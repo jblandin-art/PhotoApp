@@ -1,53 +1,78 @@
 import React from 'react';
-import {
-  AppBar, Toolbar, Typography
-} from '@mui/material';
+import { AppBar, Toolbar, Typography, Grid } from '@mui/material';
+import { withRouter } from 'react-router-dom'; // Added this for Context Awareness
 import './TopBar.css';
+import fetchModel from '../../lib/fetchModelData';
 
-/**
- * Define TopBar, a React componment of project #5
- */
 class TopBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state={
-      app_info: undefined
+    this.state = {
+      app_info: undefined,
+      contextText: ""
     };
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.handleAppInfoChange();
+    this.updateContext();
   }
 
-  handleAppInfoChange(){
-    if (this.state.app_info === undefined){
-      fetchModel("/testinfo")
-      .then.setState({
-        app_info: response.data
-    }).catch((err) => console.error("Error fetching app info:", err));
-  } }
+  componentDidUpdate(prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this.updateContext();
+    }
+  }
+
+  handleAppInfoChange() {
+    fetchModel("/testinfo")
+      .then((response) => {
+        this.setState({ app_info: response.data });
+      })
+      .catch((err) => console.error("Error fetching app info:", err));
+  }
+
+  updateContext() {
+    const path = this.props.location.pathname;
+    if (path.includes("/users/") || path.includes("/photos/")) {
+      const userId = path.split("/").pop();
+      fetchModel(`/user/${userId}`)
+        .then((response) => {
+          const user = response.data;
+          const prefix = path.includes("/photos/") ? "Photos of " : "Details of ";
+          this.setState({ contextText: `${prefix}${user.first_name} ${user.last_name}` });
+        })
+        .catch(() => this.setState({ contextText: "" }));
+    } else {
+      this.setState({ contextText: "" });
+    }
+  }
 
   render() {
-    return this.state.app_info ?(
+    return (
       <AppBar className="topbar-appBar" position="absolute">
         <Toolbar>
           <Grid container justifyContent="space-between" alignItems="center">
-
-          <Grid item>
-            <Typography variant="h5" color="inherit">
-              [Name]
-            </Typography>
-          </Grid>
-
-          <Grid item>
-            <Typography variant="h5" color="inherit">
-            </Typography> 
-          </Grid>
+            <Grid item>
+              <Typography variant="h5" color="inherit">
+                Abhiram Ankem
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="h5" color="inherit">
+                {this.state.contextText}
+              </Typography>
+            </Grid>
+            <Grid item>
+              <Typography variant="subtitle1" color="inherit">
+                {this.state.app_info ? `Version: ${this.state.app_info.__v}` : ""}
+              </Typography>
+            </Grid>
           </Grid>
         </Toolbar>
       </AppBar>
-    ) : null;
+    );
   }
 }
 
-export default TopBar;
+export default withRouter(TopBar);
