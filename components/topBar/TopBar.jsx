@@ -10,23 +10,26 @@ import './TopBar.css';
 class TopBar extends React.Component {
   constructor(props) {
     super(props);
+    this.state={
+      app_info: undefined
+    }
   }
 
   render() {
-    return (
+    return this.state.app_info ?(
       <AppBar className="topbar-appBar" position="absolute">
         <Toolbar>
-          <Grid container justifyContent="space-between" alignItems="center">
-          <Grid item>
-          <Typography variant="h5" color="inherit">
-              [Name]
-          </Typography>
-          </Grid>
-            
+          <Grid container justifyContent="space-between alignItems="center">
+
           <Grid item>
             <Typography variant="h5" color="inherit">
+              [Name]
             </Typography>
           </Grid>
+
+          <Grid item>
+            <Typography variant="h5" color="inherit">
+            </Typography> 
           </Grid>
         </Toolbar>
       </AppBar>
