@@ -3,6 +3,6 @@
   justify-content: 'center';
   background-color: #2196f3;
   padding: 10px;
-  z-index:1201;
+  z-index:1201;  /* This lets the bar stay on top of the sidebar */
 }
 
