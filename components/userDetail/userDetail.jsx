@@ -14,8 +14,22 @@ class UserDetail extends React.Component {
   constructor(props) {
     super(props);
     this.state= {user: undefined};
+    this.userId = this.props.match.params.userId;
   }
+  
 componentDidMount(){
+const userId = this.props.match.params.userId;
+
+  fetchModel(`/user/${userId}`)
+  .then((response) => {
+    this.setState({user: response.data});
+  })
+  .catch((err) => {
+    console.error("Error fetching user:", err);
+  });
+}
+
+componentDidUpdate(){
 const userId = this.props.match.params.userId;
 
   fetchModel(`/user/${userId}`)
