@@ -1,7 +1,4 @@
 import React from 'react';
-import {
-  Typography
-} from '@mui/material';
 import './userDetail.css';
 import { Link } from 'react-router-dom';
 import {Box,Button,TextField} from '@mui/material';
@@ -19,13 +16,7 @@ class UserDetail extends React.Component {
   }
   
 componentDidMount() {
-    const userId = this.props.match.params.userId;
     this._isMounted = true;
-    fetchModel(`/user/${userId}`).then((data) => {
-      if (this._isMounted) {
-        this.setState({ userData: data });
-      }
-    });
   }
 
   componentWillUnmount() {

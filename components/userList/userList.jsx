@@ -9,8 +9,7 @@ import {
 }
 from '@mui/material';
 import './userList.css';
-import { UseParams, Link } from 'react-router-dom';
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 
 /**
  * Define UserList, a React component of project #5
@@ -24,7 +23,7 @@ class UserList extends React.Component {
     this.state = {
         users: window.models.userListModel(),
         selectedUserId: userId
-    }
+    };
   }
 
   componentDidUpdate(){
@@ -61,7 +60,7 @@ class UserList extends React.Component {
                 </ListItem>
                 <Divider />
               </React.Fragment>
-            )
+            );
             })
             }
         </List>
