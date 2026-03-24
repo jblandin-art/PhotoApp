@@ -12,8 +12,21 @@ class TopBar extends React.Component {
     super(props);
     this.state={
       app_info: undefined
-    }
+    };
   }
+
+  componentDidMount(){
+    this.handleAppInfoChange();
+  }
+
+  handleAppInfoChange(){
+    if (this.state.app_info === undefined){
+      fetchModel("/testinfo")
+      .then.setState({
+        app_info: response.data
+    });
+  })
+    .catch((err) => console.error("Error fetching app info:", err));
 
   render() {
     return this.state.app_info ?(
