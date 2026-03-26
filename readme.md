@@ -10,5 +10,5 @@ Josiah Blanding
 - Abhi Ankhem
 - Natalia Dudley
 
-### Project Folder
+## Project Folder
 https://drive.google.com/drive/folders/1lMpmg6Wb2xDQI9PxLtMrReG0vOCzISpt?usp=sharing
