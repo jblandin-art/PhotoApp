@@ -1,34 +1,24 @@
 /**
- * This builds on the webServer of previous projects in that it exports the
- * current directory via webserver listing on a hard code (see portno below)
- * port. It also establishes a connection to the MongoDB named 'project6'.
+ * Web Server Implementation
+ * * This server extends previous functionality by connecting to the MongoDB 
+ * database and serving files from the current directory.
  *
- * To start the webserver run the command:
- *    node webServer.js
+ * Usage:
+ * node webServer.js
  *
- * Note that anyone able to connect to localhost:portNo will be able to fetch
- * any file accessible to the current user in the current directory or any of
- * its children.
+ * Note: Localhost access allows retrieval of any file within the 
+ * current working directory and its subdirectories.
  *
- * This webServer exports the following URLs:
- * /            - Returns a text status message. Good for testing web server
- *                running.
- * /test        - Returns the SchemaInfo object of the database in JSON format.
- *                This is good for testing connectivity with MongoDB.
- * /test/info   - Same as /test.
- * /test/counts - Returns the population counts of the cs collections in the
- *                database. Format is a JSON object with properties being the
- *                collection name and the values being the counts.
+ * API Endpoints:
+ * /            - Server status check.
+ * /test        - Fetches SchemaInfo JSON to verify database connectivity.
+ * /test/info   - Alias for /test.
+ * /test/counts - Returns JSON object with document counts for collections.
  *
- * The following URLs need to be changed to fetch there reply values from the
- * database:
- * /user/list         - Returns an array containing all the User objects from
- *                      the database (JSON format).
- * /user/:id          - Returns the User object with the _id of id (JSON
- *                      format).
- * /photosOfUser/:id  - Returns an array with all the photos of the User (id).
- *                      Each photo should have all the Comments on the Photo
- *                      (JSON format).
+ * Database-Driven Endpoints:
+ * /user/list         - Returns an array of all User objects.
+ * /user/:id          - Returns a specific User object by _id.
+ * /photosOfUser/:id  - Returns all photos and associated comments for a user.
  */
 
 const mongoose = require("mongoose");
