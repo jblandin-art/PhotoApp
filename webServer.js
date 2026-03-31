@@ -46,7 +46,7 @@ const SchemaInfo = require("./schema/schemaInfo.js");
 
 // XXX - Your submission should work without this line. Comment out or delete
 // this line for tests and before submission!
-const models = require("./modelData/photoApp.js").models;
+//const models = require("./modelData/photoApp.js").models;
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1/project6", {
   useNewUrlParser: true,
@@ -143,7 +143,15 @@ app.get("/test/:p1", function (request, response) {
  * URL /user/list - Returns all the User objects.
  */
 app.get("/user/list", function (request, response) {
-  response.status(200).send(models.userListModel());
+  // replace models.userListModel() with the appropriate query to the database to return the list of all users.
+  User.find({}, '_id first_name last_name', function (err, users) {
+    if (err) {
+      console.error("Error in /user/list:", err);
+      response.status(500).send(JSON.stringify(err));
+      return;
+    }
+    response.status(200).send(users);
+  });
 });
 
 /**
@@ -151,27 +159,56 @@ app.get("/user/list", function (request, response) {
  */
 app.get("/user/:id", function (request, response) {
   const id = request.params.id;
-  const user = models.userModel(id);
-  if (user === null) {
-    console.log("User with _id:" + id + " not found.");
-    response.status(400).send("Not found");
-    return;
-  }
-  response.status(200).send(user);
+  User.findById(id, '_id first_name last_name location description occupation', function (err, user) {
+    if (err) {
+      console.error("Error in /user/:id:", err);
+      response.status(500).send(JSON.stringify(err));
+      return;
+    }
+    if (user === null) {
+      console.log("User with _id:" + id + " not found.");
+      response.status(400).send("Not found");
+      return;
+    }
+    response.status(200).send(user);
+  });
 });
 
 /**
  * URL /photosOfUser/:id - Returns the Photos for User (id).
  */
-app.get("/photosOfUser/:id", function (request, response) {
-  const id = request.params.id;
-  const photos = models.photoOfUserModel(id);
-  if (photos.length === 0) {
-    console.log("Photos for user with _id:" + id + " not found.");
-    response.status(400).send("Not found");
-    return;
-  }
-  response.status(200).send(photos);
+app.get("/photosOfUser/:id", function (req, res) {
+  const id = req.params.id;
+
+  Photo.find({ user_id: id }, '_id file_name date_time user_id comments')
+    .populate('comments.user_id', '_id first_name last_name') // fetch only name fields
+    .exec(function (err, photos) {
+      if (err) {
+        console.error(err);
+        res.status(500).send(err);
+        return;
+      }
+
+      if (photos.length === 0) {
+      //console.log("Photos for user with _id:" + id + " not found.");
+      res.status(400).send("Not found");
+      return;
+      }
+      const plainPhotos = JSON.parse(JSON.stringify(photos));
+
+      plainPhotos.forEach(photo => {
+        photo.comments.forEach(c => {
+          c.user = c.user_id;
+          delete c.user_id;
+        });
+      });
+
+      // Log the comments arrays specifically to see the rename
+      //plainPhotos.forEach(photo => {
+        //console.log(`Photo ${photo._id} comments:`, photo.comments);
+      //});
+      res.status(200).send(plainPhotos);
+    });
 });
 
 const server = app.listen(3000, function () {
