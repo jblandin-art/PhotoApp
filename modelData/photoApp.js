@@ -71,7 +71,7 @@
 
    var users = [im, er, pt, rk, al, jo];
 
-   // Create initial photos.
+   // Create initial photos. 
    var photo1 = {_id: "57231f1a30e4351f4e9f4bdd", date_time: "2012-08-30 10:44:23", file_name: "ouster.jpg", user_id: jo._id};
    var photo2 = {_id: "57231f1a30e4351f4e9f4bde", date_time: "2009-09-13 20:00:00", file_name: "malcolm2.jpg", user_id: im._id};
    var photo3 = {_id: "57231f1a30e4351f4e9f4bdf", date_time: "2009-09-13 20:05:03", file_name: "malcolm1.jpg", user_id: im._id};
