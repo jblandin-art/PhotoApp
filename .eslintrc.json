@@ -1,18 +1,13 @@
 {
-  "plugins": [
-      "react"
-  ],
+  "plugins": ["react"],
   "extends": [
     "eslint:recommended",
     "eslint-config-airbnb",
     "plugin:react/recommended"
   ],
   "parser": "@babel/eslint-parser",
-  "parserOptions": {
-    "ecmaVersion": 2022
-  },
   "rules": {
-    // rules
+    // CS rules
     "no-console": 0,
     "react/prop-types": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],
@@ -63,7 +58,6 @@
     "prefer-const": "off",
     "no-useless-constructor": "off",
     "react/jsx-boolean-value": "off",
-
 
     // Overly strict style rules
     "arrow-parens": 0,
