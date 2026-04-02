@@ -2,7 +2,8 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Grid } from '@mui/material';
 import { withRouter } from 'react-router-dom'; // Added this for Context Awareness
 import './TopBar.css';
-import fetchModel from '../../lib/fetchModelData';
+//import fetchModel from '../../lib/fetchModelData';
+import axios from 'axios';
 
 class TopBar extends React.Component {
   constructor(props) {
@@ -27,7 +28,7 @@ class TopBar extends React.Component {
     const path = this.props.location.pathname;
     if (path.includes("/users/") || path.includes("/photos/")) {
       const userId = path.split("/").pop();
-      fetchModel(`/user/${userId}`)
+      axios.get(`/user/${userId}`)
         .then((response) => {
           const user = response.data;
           const prefix = path.includes("/photos/") ? "Photos of " : "Details of ";

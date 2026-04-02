@@ -2,7 +2,8 @@ import React from 'react';
 import './userDetail.css';
 import { Link } from 'react-router-dom';
 import {Box,Button,TextField} from '@mui/material';
-import fetchModel from "../../lib/fetchModelData";
+//import fetchModel from "../../lib/fetchModelData";
+import axios from 'axios';
 
 /**
  * Define UserDetail, a React component of project #5
@@ -19,7 +20,7 @@ componentDidMount() {
     this._isMounted = true;
     const userId = this.props.match.params.userId;
 
-    fetchModel(`/user/${userId}`)
+    axios.get(`/user/${userId}`)
         .then((response) => {
           this.setState({user: response.data});
         })
@@ -35,7 +36,7 @@ componentDidMount() {
   componentDidUpdate(){
     const userId = this.props.match.params.userId;
 
-      fetchModel(`/user/${userId}`)
+      axios.get(`/user/${userId}`)
       .then((response) => {
         this.setState({user: response.data});
       })

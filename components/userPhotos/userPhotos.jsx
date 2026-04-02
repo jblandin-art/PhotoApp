@@ -2,7 +2,8 @@ import React from 'react';
 import { Typography, Card, CardContent, Divider, List, ListItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import './userPhotos.css';
-import fetchModel from '../../lib/fetchModelData';
+import axios from 'axios';
+//import fetchModel from '../../lib/fetchModelData';
 
 class UserPhotos extends React.Component {
   constructor(props) {
@@ -15,7 +16,7 @@ class UserPhotos extends React.Component {
   componentDidMount() {
     const userId = this.props.match.params.userId;
     // FETCH DATA: Calling the API to get photos for this specific user
-    fetchModel(`/photosOfUser/${userId}`)
+    axios.get(`/photosOfUser/${userId}`)
       .then((response) => {
         this.setState({ photos: response.data });
       })

@@ -10,7 +10,8 @@ import {
 from '@mui/material';
 import './userList.css';
 import { Link, withRouter } from 'react-router-dom';
-import fetchModel from '../../lib/fetchModelData';
+//import fetchModel from '../../lib/fetchModelData';
+import axios from 'axios';
 
 /**
  * Define UserList, a React component of project #5
@@ -28,7 +29,7 @@ class UserList extends React.Component {
   }
 
   componentDidMount() {
-  fetchModel('/user/list')
+  axios.get('/user/list')
     .then((data) => {
       this.setState({ users: data.data });
     })
