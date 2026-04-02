@@ -9,6 +9,7 @@
  * Note: Localhost access allows retrieval of any file within the 
  * current working directory and its subdirectories.
  *
+ *
  * API Endpoints:
  * /            - Server status check.
  * /test        - Fetches SchemaInfo JSON to verify database connectivity.
@@ -123,8 +124,8 @@ app.get("/test/:p1", function (request, response) {
       }
     );
   } else {
-    // If we know understand the parameter we return a (Bad Parameter) (400)
-    // status.
+    // If the request doesnt support the parameters, then it returns a 400 Bad Request.
+    // This informs the the client the parameter is invalid. 
     response.status(400).send("Bad param " + param);
   }
 });
