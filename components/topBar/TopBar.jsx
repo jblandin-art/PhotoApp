@@ -1,8 +1,9 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Grid } from '@mui/material';
+import { AppBar, Toolbar, Typography, Grid, Button } from '@mui/material';
 import { withRouter } from 'react-router-dom'; // Added this for Context Awareness
 import './TopBar.css';
 //import fetchModel from '../../lib/fetchModelData';
+
 import axios from 'axios';
 
 class TopBar extends React.Component {
@@ -40,7 +41,14 @@ class TopBar extends React.Component {
     }
   }
 
+  handleLogout = () => {
+    if (this.props.onLogout) {
+      this.props.onLogout();
+    }
+  };
+
   render() {
+    const { loggedInUser } = this.props;
     return (
       <AppBar className="topbar-appBar" position="absolute">
         <Toolbar>
@@ -56,9 +64,24 @@ class TopBar extends React.Component {
               </Typography>
             </Grid>
             <Grid item>
-              <Typography variant="subtitle1" color="inherit">
-                {this.state.app_info ? `Version: ${this.state.app_info.__v}` : ""}
-              </Typography>
+              {loggedInUser ? (
+                <Grid container alignItems="center" spacing={1}>
+                  <Grid item>
+                    <Typography variant="subtitle1" color="inherit">
+                      Hi {loggedInUser.first_name}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Button color="inherit" onClick={this.handleLogout} size="small" variant="outlined">
+                      Logout
+                    </Button>
+                  </Grid>
+                </Grid>
+              ) : (
+                <Typography variant="subtitle1" color="inherit">
+                  Please Login
+                </Typography>
+              )}
             </Grid>
           </Grid>
         </Toolbar>
@@ -66,5 +89,4 @@ class TopBar extends React.Component {
     );
   }
 }
-
 export default withRouter(TopBar);

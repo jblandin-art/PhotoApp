@@ -41,7 +41,37 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 
 app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
+
 app.use(bodyParser.json());
+
+// Authentication middleware: protect all routes except login/logout/test
+app.use((req, res, next) => {
+  if (
+    req.path === '/admin/login' ||
+    req.path === '/admin/logout' ||
+    req.path.startsWith('/test') ||
+    req.path === '/' ||
+    req.path.endsWith('.js') ||
+    req.path.endsWith('.css') ||
+    req.path.endsWith('.html') ||
+    req.path.startsWith('/images') ||
+    req.path.startsWith('/compiled')
+  ) {
+    return next();
+  }
+  if (!req.session.user) {
+    return res.status(401).send('Unauthorized');
+  }
+  next();
+});
+
+// Endpoint to get current logged-in user
+app.get('/me', function (req, res) {
+  if (!req.session.user) {
+    return res.status(401).send('Unauthorized');
+  }
+  res.status(200).json(req.session.user);
+});
 
 
 // XXX - Your submission should work without this line. Comment out or delete
@@ -209,6 +239,51 @@ app.get("/photosOfUser/:id", function (req, res) {
       //});
       res.status(200).send(plainPhotos);
     });
+});
+
+app.post("/admin/login", async function (request, response) {
+  const loginName = request.body.login_name;
+  const password = request.body.password;
+
+  if (!loginName) {
+    return response.status(400).send("Missing login_name");
+  }
+  if (!password) {
+    return response.status(400).send("Missing password");
+  }
+
+  try {
+    const user = await User.findOne({ login_name: loginName });
+
+    if (!user) {
+      return response.status(400).send("Invalid login_name");
+    }
+    if (user.password !== password) {
+      return response.status(400).send("Invalid password");
+    }
+
+    request.session.user = {
+      _id: user._id,
+      first_name: user.first_name
+    };
+
+    return response.status(200).json({
+      _id: user._id,
+      first_name: user.first_name
+    });
+
+  } catch (err) {
+    return response.status(500).send("Server error");
+  }
+});
+
+app.post("/admin/logout", function (request, response) {
+  if (!request.session.user) {
+    return response.status(400).send("Not logged in");
+  }
+
+  request.session.destroy();
+  return response.status(200).send("Logged out");
 });
 
 const server = app.listen(3000, function () {
