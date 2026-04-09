@@ -47,7 +47,7 @@ class TopBar extends React.Component {
           <Grid container justifyContent="space-between" alignItems="center">
             <Grid item>
               <Typography variant="h5" color="inherit">
-                Abhiram Ankem
+                Abhi Ankem
               </Typography>
             </Grid>
             <Grid item>
