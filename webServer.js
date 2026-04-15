@@ -1,4 +1,5 @@
-/**
+require('dotenv').config();
+
  * Web Server Implementation
  * * This server extends previous functionality by connecting to the MongoDB 
  * database and serving files from the current directory.
@@ -49,6 +50,7 @@ app.use((req, res, next) => {
   if (
     req.path === '/admin/login' ||
     req.path === '/admin/logout' ||
+    (req.path === '/user' && req.method === 'POST') ||
     req.path.startsWith('/test') ||
     req.path === '/' ||
     req.path.endsWith('.js') ||
@@ -78,7 +80,7 @@ app.get('/me', function (req, res) {
 // this line for tests and before submission!
 //const models = require("./modelData/photoApp.js").models;
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project6", {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -284,6 +286,56 @@ app.post("/admin/logout", function (request, response) {
 
   request.session.destroy();
   return response.status(200).send("Logged out");
+});
+
+/**
+ * URL /user - Registers a new user.
+ * Requires: login_name, password, first_name, last_name in request body.
+ * Returns 400 if login_name is already taken or required fields are missing.
+ * Returns 200 with the new user object on success.
+ */
+app.post("/user", async function (request, response) {
+  const { login_name, password, first_name, last_name } = request.body;
+
+  // Validate required fields
+  if (!login_name) {
+    return response.status(400).send("Missing login_name");
+  }
+  if (!password) {
+    return response.status(400).send("Missing password");
+  }
+  if (!first_name) {
+    return response.status(400).send("Missing first_name");
+  }
+  if (!last_name) {
+    return response.status(400).send("Missing last_name");
+  }
+
+  try {
+    // Check if login_name is already taken
+    const existingUser = await User.findOne({ login_name });
+    if (existingUser) {
+      return response.status(400).send("login_name already taken");
+    }
+
+    // Create the new user
+    const newUser = await User.create({
+      login_name,
+      password,
+      first_name,
+      last_name,
+    });
+
+    return response.status(200).json({
+      _id: newUser._id,
+      login_name: newUser.login_name,
+      first_name: newUser.first_name,
+      last_name: newUser.last_name,
+    });
+  } catch (err) {
+    console.error("Error in POST /user:", err);
+    return response.status(500).send("Server error");
+  }
 });
 
 const server = app.listen(3000, function () {
