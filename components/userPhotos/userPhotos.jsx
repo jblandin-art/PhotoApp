@@ -9,7 +9,8 @@ class UserPhotos extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      photos: []
+      photos: [],
+      newComments: {} // Stores new comments for each photo
     };
   }
 
@@ -17,13 +18,49 @@ class UserPhotos extends React.Component {
     const userId = this.props.match.params.userId;
     // FETCH DATA: Calling the API to get photos for this specific user
     axios.get(`/photosOfUser/${userId}`)
-      .then((response) => {
+      .then((response) => { 
+        // Successfully gets photo and updates the state with the photos data
         this.setState({ photos: response.data });
       })
       .catch((err) => {
         console.error("Error fetching photos:", err);
       });
   }
+
+  handleCommentChange = (photoId, event) => {
+    this.setState((prevState) => ({
+      newComments: {
+        ...prevState.newComments,
+        [photoId]: event.target.value
+      }
+    }));
+  };
+
+  handleAddComment = (photoId) => {
+    const commentText = this.state.newComments[photoId];
+    if (!commentText) {
+      alert("Comment cannot be empty.");
+      return;
+    }
+
+    axios.post(`/commentsOfPhoto/${photoId}`, { comment: commentText }).then((response) => {
+      this.setState((prevState) => {
+        const updatedPhotos = prevState.photos.map((photo) => {
+          if (photo._id === photoId) {
+            return {
+              ...photo, comments: [...(photo.comments || []), response.data]};
+          }
+          return photo;
+        });
+        return { photos: updatedPhotos, newComments: { ...prevState.newComments, [photoId]: '' } };
+      });
+    })
+    .catch((err) => {
+      console.error("Error adding comment:", err);
+    });
+  };
+  
+
 
   render() {
     return (
