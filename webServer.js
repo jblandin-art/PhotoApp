@@ -80,7 +80,7 @@ app.get('/me', function (req, res) {
 // this line for tests and before submission!
 //const models = require("./modelData/photoApp.js").models;
 mongoose.set("strictQuery", false);
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1/project6", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
