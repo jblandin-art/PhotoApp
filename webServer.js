@@ -347,3 +347,47 @@ const server = app.listen(3000, function () {
       __dirname
   );
 });
+
+app.post("/photos/new", function (request, response) {
+  // 1. Check if user is logged in
+  if (!request.session.user) {
+    return response.status(401).send("Unauthorized");
+  }
+
+  const user_id = request.session.user._id;
+
+  // 2. Process the the file upload
+  processFormBody(request, response, function (err) {
+    if (err || !request.file) {
+      console.error("Error in /photos/new: No file provided", err);
+      return response.status(400).send("photo required");
+    }
+
+    // 3. Create a unique filename
+    const timestamp = new Date().valueOf();
+    const filename = 'U' + String(timestamp) + request.file.originalname;
+
+    // 4. Write the file to the images directory
+    fs.writeFile("./images/" + filename, request.file.buffer, function (err1) {
+      if (err1) {
+        console.error("Error writing photo to disk:", err1);
+        return response.status(400).send("error writing photo");
+      }
+
+      // 5. Create the Photo document in MongoDB
+      Photo.create({
+        file_name: filename,
+        date_time: new Date(),
+        user_id: new mongoose.Types.ObjectId(user_id),
+        comments: [] // Note: your schema uses 'comments' (plural), based on your /photosOfUser route
+      })
+      .then(() => {
+        response.status(200).send("Photo uploaded successfully");
+      })
+      .catch(err2 => {
+        console.error("Error saving Photo to database:", err2);
+        response.status(500).send("Database error");
+      });
+    });
+  });
+});
