@@ -1,6 +1,6 @@
 require('dotenv').config();
 
- * Web Server Implementation
+ /*Web Server Implementation
  * * This server extends previous functionality by connecting to the MongoDB 
  * database and serving files from the current directory.
  *

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Card, CardContent, Divider, List, ListItem } from '@mui/material';
+import { Typography, Card, CardContent, Divider, List, ListItem, TextField } from '@mui/material';
 import { Link } from 'react-router-dom';
 import './userPhotos.css';
 import axios from 'axios';
@@ -10,6 +10,7 @@ class UserPhotos extends React.Component {
     super(props);
     this.state = {
       photos: [],
+      newComment: '',
       newComments: {} // Stores new comments for each photo
     };
   }
@@ -27,23 +28,24 @@ class UserPhotos extends React.Component {
       });
   }
 
-  handleCommentChange = (photoId, event) => {
+	handleCommentChange = (photoId) => {
     this.setState((prevState) => ({
+      ...prevState,
       newComments: {
         ...prevState.newComments,
         [photoId]: event.target.value
       }
     }));
-  };
+	};
 
-  handleAddComment = (photoId) => {
+  handleAddComment = (event) => {
     const commentText = this.state.newComments[photoId];
     if (!commentText) {
       alert("Comment cannot be empty.");
       return;
     }
 
-    axios.post(`/commentsOfPhoto/${photoId}`, { comment: commentText }).then((response) => {
+    axios.post("/commentsOfPhoto/" + {photoId}, { comment: commentText }).then((response) => {
       this.setState((prevState) => {
         const updatedPhotos = prevState.photos.map((photo) => {
           if (photo._id === photoId) {
@@ -101,8 +103,16 @@ class UserPhotos extends React.Component {
                   </ListItem>
                 )) : <Typography variant="body2">No comments yet.</Typography>}
               </List>
+              <div>
+                <form onSubmit={this.handleAddComment}>
+							    <label for='comment'>Add comment...</label>
+                  <input type='text' value={this.state.newComments[photo._id]} onChange = {this.handleCommentChange}/>
+                  <input type="submit" value="Submit"></input>
+					      </form>
+              </div>
             </CardContent>
           </Card>
+          
         ))}
       </div>
     );
