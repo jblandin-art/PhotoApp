@@ -28,7 +28,7 @@ class UserPhotos extends React.Component {
       });
   }
 
-	handleCommentChange = (photoId) => {
+	handleCommentChange = (photoId, event) => {
     this.setState((prevState) => ({
       ...prevState,
       newComments: {
@@ -45,7 +45,7 @@ class UserPhotos extends React.Component {
       return;
     }
 
-    axios.post("/commentsOfPhoto/" + {photoId}, { comment: commentText }).then((response) => {
+    axios.post(`/commentsOfPhoto/${photoId}`, { comment: commentText }) => {
       this.setState((prevState) => {
         const updatedPhotos = prevState.photos.map((photo) => {
           if (photo._id === photoId) {
