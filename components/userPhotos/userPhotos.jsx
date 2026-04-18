@@ -62,7 +62,32 @@ class UserPhotos extends React.Component {
     });
   };
   
+handleUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
+  const formData = new FormData();
+  formData.append("uploadedphoto", file);
+
+  axios.post("/photos/new", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data"
+    },
+    withCredentials: true
+  })
+  .then(() => {
+    //  refresh photos after upload
+    const userId = this.props.match.params.userId;
+
+    return axios.get(`/photosOfUser/${userId}`);
+  })
+  .then((response) => {
+    this.setState({ photos: response.data });
+  })
+  .catch((err) => {
+    console.error("Error uploading photo:", err);
+  });
+};
 
   render() {
     return (
