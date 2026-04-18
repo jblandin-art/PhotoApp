@@ -30,7 +30,8 @@ const async = require("async");
 
 const express = require("express");
 const app = express();
-
+const fs = require("fs");
+const path = require("path");
 // Load the Mongoose schema for User, Photo, and SchemaInfo
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
@@ -40,11 +41,15 @@ const SchemaInfo = require("./schema/schemaInfo.js");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 const multer = require("multer");
+const processFormBody = multer({
+ storage: multer.memoryStorage()
+}).single('uploadedphoto');
 
 app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
 
 app.use(bodyParser.json());
 
+app.use('/images', express.static(path.join(__dirname, 'images')));
 // Authentication middleware: protect all routes except login/logout/test
 app.use((req, res, next) => {
   if (
@@ -390,4 +395,14 @@ app.post("/photos/new", function (request, response) {
       });
     });
   });
+});
+
+const server = app.listen(3000, function () {
+  const port = server.address().port;
+  console.log(
+    "Listening at http://localhost:" +
+      port +
+      " exporting the directory " +
+      __dirname
+  );
 });
