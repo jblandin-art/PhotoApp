@@ -198,6 +198,9 @@ app.get("/user/:id", function (request, response) {
   const id = request.params.id;
   User.findById(id, '_id first_name last_name location description occupation', function (err, user) {
     if (err) {
+      if (err.name === "CastError") {
+        return response.status(400).send("Invalid user id");
+      }
       console.error("Error in /user/:id:", err);
       response.status(500).send(JSON.stringify(err));
       return;
@@ -343,14 +346,52 @@ app.post("/user", async function (request, response) {
   }
 });
 
-const server = app.listen(3000, function () {
-  const port = server.address().port;
-  console.log(
-    "Listening at http://localhost:" +
-      port +
-      " exporting the directory " +
-      __dirname
-  );
+/**
+ * URL /commentsOfPhoto/:photo_id - Adds a comment to the specified photo.
+ * Requires: comment in request body and an authenticated user session.
+ */
+app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
+  const photoId = request.params.photo_id;
+  const commentText = request.body.comment;
+
+  if (!commentText || !String(commentText).trim()) {
+    return response.status(400).send("Missing comment");
+  }
+
+  try {
+    const photo = await Photo.findById(photoId);
+    if (!photo) {
+      return response.status(400).send("Photo not found");
+    }
+
+    const comment = {
+      comment: String(commentText).trim(),
+      date_time: new Date(),
+      user_id: request.session.user._id,
+    };
+
+    photo.comments.push(comment);
+    await photo.save();
+
+    const createdComment = photo.comments[photo.comments.length - 1];
+
+    return response.status(200).json({
+      _id: createdComment._id,
+      comment: createdComment.comment,
+      date_time: createdComment.date_time,
+      user: {
+        _id: request.session.user._id,
+        first_name: request.session.user.first_name,
+        last_name: request.session.user.last_name || "",
+      },
+    });
+  } catch (err) {
+    if (err.name === "CastError") {
+      return response.status(400).send("Invalid photo id");
+    }
+    console.error("Error in POST /commentsOfPhoto/:photo_id:", err);
+    return response.status(500).send("Server error");
+  }
 });
 
 app.post("/photos/new", function (request, response) {

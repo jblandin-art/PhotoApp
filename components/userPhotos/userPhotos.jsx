@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Card, CardContent, Divider, List, ListItem, TextField } from '@mui/material';
+import { Typography, Card, CardContent, Divider, List, ListItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import './userPhotos.css';
 import axios from 'axios';
@@ -28,7 +28,7 @@ class UserPhotos extends React.Component {
       });
   }
 
-	handleCommentChange = (photoId, event) => {
+  handleCommentChange = (photoId, event) => {
     this.setState((prevState) => ({
       ...prevState,
       newComments: {
@@ -36,16 +36,17 @@ class UserPhotos extends React.Component {
         [photoId]: event.target.value
       }
     }));
-	};
+  };
 
-  handleAddComment = (event) => {
+  handleAddComment = (photoId, event) => {
+    event.preventDefault();
     const commentText = this.state.newComments[photoId];
     if (!commentText) {
       alert("Comment cannot be empty.");
       return;
     }
 
-    axios.post(`/commentsOfPhoto/${photoId}`, { comment: commentText }) => {
+    axios.post(`/commentsOfPhoto/${photoId}`, { comment: commentText }).then((response) => {
       this.setState((prevState) => {
         const updatedPhotos = prevState.photos.map((photo) => {
           if (photo._id === photoId) {
@@ -129,11 +130,16 @@ handleUpload = (event) => {
                 )) : <Typography variant="body2">No comments yet.</Typography>}
               </List>
               <div>
-                <form onSubmit={this.handleAddComment}>
-							    <label for='comment'>Add comment...</label>
-                  <input type='text' value={this.state.newComments[photo._id]} onChange = {this.handleCommentChange}/>
+                <form onSubmit={(event) => this.handleAddComment(photo._id, event)}>
+                  <label htmlFor={`comment-${photo._id}`}>Add comment...</label>
+                  <input
+                    id={`comment-${photo._id}`}
+                    type='text'
+                    value={this.state.newComments[photo._id] || ''}
+                    onChange={(event) => this.handleCommentChange(photo._id, event)}
+                  />
                   <input type="submit" value="Submit"></input>
-					      </form>
+                </form>
               </div>
             </CardContent>
           </Card>
