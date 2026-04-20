@@ -1,0 +1,60 @@
+/* Add comment form styling */
+.comment-form-shell {
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid #e0e0e0;
+}
+
+.comment-form {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.comment-form-label {
+	font-weight: 600;
+	color: #444;
+	min-width: 110px;
+}
+
+.comment-form-input {
+	flex: 1;
+	min-width: 240px;
+	padding: 10px 12px;
+	border: 1px solid #cfcfcf;
+	border-radius: 8px;
+	font-size: 14px;
+	outline: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	background: #fff;
+}
+
+.comment-form-input:focus {
+	border-color: #1976d2;
+	box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.12);
+}
+
+.comment-form-button {
+	padding: 10px 16px;
+	border: none;
+	border-radius: 8px;
+	background: #1976d2;
+	color: #fff;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.15s ease, transform 0.05s ease;
+}
+
+.comment-form-button:hover {
+	background: #125aa0;
+}
+
+.comment-form-button:active {
+	transform: translateY(1px);
+}
+
+.comment-form-button:focus {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.18);
+}

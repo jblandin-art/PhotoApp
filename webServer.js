@@ -33,14 +33,14 @@ const app = express();
 const fs = require("fs");
 const path = require("path");
 // Load the Mongoose schema for User, Photo, and SchemaInfo
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const multer = require("multer");
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
 
 // Express session and other new modules
-const session = require("express-session");
-const bodyParser = require("body-parser");
-const multer = require("multer");
 const processFormBody = multer({
  storage: multer.memoryStorage()
 }).single('uploadedphoto');
@@ -69,7 +69,7 @@ app.use((req, res, next) => {
   if (!req.session.user) {
     return res.status(401).send('Unauthorized');
   }
-  next();
+  return next();
 });
 
 // Endpoint to get current logged-in user
@@ -77,7 +77,7 @@ app.get('/me', function (req, res) {
   if (!req.session.user) {
     return res.status(401).send('Unauthorized');
   }
-  res.status(200).json(req.session.user);
+  return res.status(200).json(req.session.user);
 });
 
 
@@ -184,10 +184,9 @@ app.get("/user/list", function (request, response) {
   User.find({}, '_id first_name last_name', function (err, users) {
     if (err) {
       console.error("Error in /user/list:", err);
-      response.status(500).send(JSON.stringify(err));
-      return;
+      return response.status(500).send(JSON.stringify(err));
     }
-    response.status(200).send(users);
+    return response.status(200).send(users);
   });
 });
 
@@ -202,15 +201,13 @@ app.get("/user/:id", function (request, response) {
         return response.status(400).send("Invalid user id");
       }
       console.error("Error in /user/:id:", err);
-      response.status(500).send(JSON.stringify(err));
-      return;
+      return response.status(500).send(JSON.stringify(err));
     }
     if (user === null) {
       console.log("User with _id:" + id + " not found.");
-      response.status(400).send("Not found");
-      return;
+      return response.status(400).send("Not found");
     }
-    response.status(200).send(user);
+    return response.status(200).send(user);
   });
 });
 
@@ -224,15 +221,16 @@ app.get("/photosOfUser/:id", function (req, res) {
     .populate('comments.user_id', '_id first_name last_name') // fetch only name fields
     .exec(function (err, photos) {
       if (err) {
+        if (err.name === "CastError") {
+          return res.status(400).send("Invalid user id");
+        }
         console.error(err);
-        res.status(500).send(err);
-        return;
+        return res.status(500).send(err);
       }
 
       if (photos.length === 0) {
       //console.log("Photos for user with _id:" + id + " not found.");
-      res.status(400).send("Not found");
-      return;
+      return res.status(400).send("Not found");
       }
       const plainPhotos = JSON.parse(JSON.stringify(photos));
 
@@ -247,7 +245,7 @@ app.get("/photosOfUser/:id", function (req, res) {
       //plainPhotos.forEach(photo => {
         //console.log(`Photo ${photo._id} comments:`, photo.comments);
       //});
-      res.status(200).send(plainPhotos);
+      return res.status(200).send(plainPhotos);
     });
 });
 
@@ -403,7 +401,7 @@ app.post("/photos/new", function (request, response) {
   const user_id = request.session.user._id;
 
   // 2. Process the the file upload
-  processFormBody(request, response, function (err) {
+  return processFormBody(request, response, function (err) {
     if (err || !request.file) {
       console.error("Error in /photos/new: No file provided", err);
       return response.status(400).send("photo required");
@@ -414,25 +412,25 @@ app.post("/photos/new", function (request, response) {
     const filename = 'U' + String(timestamp) + request.file.originalname;
 
     // 4. Write the file to the images directory
-    fs.writeFile("./images/" + filename, request.file.buffer, function (err1) {
+    return fs.writeFile("./images/" + filename, request.file.buffer, function (err1) {
       if (err1) {
         console.error("Error writing photo to disk:", err1);
         return response.status(400).send("error writing photo");
       }
 
       // 5. Create the Photo document in MongoDB
-      Photo.create({
+      return Photo.create({
         file_name: filename,
         date_time: new Date(),
         user_id: new mongoose.Types.ObjectId(user_id),
         comments: [] // Note: your schema uses 'comments' (plural), based on your /photosOfUser route
       })
       .then(() => {
-        response.status(200).send("Photo uploaded successfully");
+        return response.status(200).send("Photo uploaded successfully");
       })
       .catch(err2 => {
         console.error("Error saving Photo to database:", err2);
-        response.status(500).send("Database error");
+        return response.status(500).send("Database error");
       });
     });
   });

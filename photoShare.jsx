@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {
-  HashRouter, Route, Switch
-} from 'react-router-dom';
+  HashRouter, Route, Switch,
+ Redirect } from 'react-router-dom';
 import {
   Grid, Typography, Paper
 } from '@mui/material';
@@ -10,13 +10,13 @@ import './styles/main.css';
 
 // import necessary components
 
+import axios from 'axios';
 import TopBar from './components/topBar/TopBar';
 import UserDetail from './components/userDetail/userDetail';
 import UserList from './components/userList/userList';
 import UserPhotos from './components/userPhotos/userPhotos';
 import LoginRegister from './components/LoginRegister/LoginRegister';
-import { Redirect } from 'react-router-dom';
-import axios from 'axios';
+
 
 
 class PhotoShare extends React.Component {
@@ -24,7 +24,8 @@ class PhotoShare extends React.Component {
     super(props);
     this.state = {
       loggedInUser: null,
-      checkedLogin: false
+      checkedLogin: false,
+      photoRefreshCounter: 0
     };
   }
 
@@ -54,6 +55,12 @@ class PhotoShare extends React.Component {
       });
   };
 
+  handlePhotoUploaded = () => {
+    this.setState((prevState) => ({
+      photoRefreshCounter: prevState.photoRefreshCounter + 1,
+    }));
+  };
+
   isLoggedIn = () => {
     return !!this.state.loggedInUser;
   };
@@ -69,7 +76,11 @@ class PhotoShare extends React.Component {
         <div>
           <Grid container spacing={8}>
             <Grid item xs={12}>
-              <TopBar loggedInUser={this.state.loggedInUser} onLogout={this.handleLogout} />
+              <TopBar
+                loggedInUser={this.state.loggedInUser}
+                onLogout={this.handleLogout}
+                onPhotoUploaded={this.handlePhotoUploaded}
+              />
             </Grid>
             <div className="main-topbar-buffer" />
             <Grid item sm={3}>
@@ -102,7 +113,12 @@ class PhotoShare extends React.Component {
                   )} />
 
                   <Route path="/photos/:userId" render={props => (
-                    this.isLoggedIn() ? <UserPhotos {...props} /> : <Redirect to="/login-register" />
+                    this.isLoggedIn() ? (
+                      <UserPhotos
+                        key={`${props.location.pathname}-${this.state.photoRefreshCounter}`}
+                        {...props}
+                      />
+                    ) : <Redirect to="/login-register" />
                   )} />
 
                   <Route path="/users" render={props => (

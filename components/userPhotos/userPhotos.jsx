@@ -42,7 +42,7 @@ class UserPhotos extends React.Component {
     event.preventDefault();
     const commentText = this.state.newComments[photoId];
     if (!commentText) {
-      alert("Comment cannot be empty.");
+      console.error("Comment cannot be empty.");
       return;
     }
 
@@ -129,16 +129,17 @@ handleUpload = (event) => {
                   </ListItem>
                 )) : <Typography variant="body2">No comments yet.</Typography>}
               </List>
-              <div>
-                <form onSubmit={(event) => this.handleAddComment(photo._id, event)}>
-                  <label htmlFor={`comment-${photo._id}`}>Add comment...</label>
+              <div className="comment-form-shell">
+                <form className="comment-form" onSubmit={(event) => this.handleAddComment(photo._id, event)}>
+                  <label className="comment-form-label" htmlFor={`comment-${photo._id}`}>Add comment...</label>
                   <input
                     id={`comment-${photo._id}`}
+                    className="comment-form-input"
                     type='text'
                     value={this.state.newComments[photo._id] || ''}
                     onChange={(event) => this.handleCommentChange(photo._id, event)}
                   />
-                  <input type="submit" value="Submit"></input>
+                  <input className="comment-form-button" type="submit" value="Submit"></input>
                 </form>
               </div>
             </CardContent>

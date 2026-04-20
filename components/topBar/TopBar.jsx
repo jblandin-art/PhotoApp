@@ -10,9 +10,9 @@ class TopBar extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      app_info: undefined,
       contextText: ""
     };
+    this.fileInputRef = React.createRef();
   }
 
   componentDidMount() {
@@ -47,6 +47,44 @@ class TopBar extends React.Component {
     }
   };
 
+  handleAddPhotoClick = () => {
+    if (this.fileInputRef.current) {
+      this.fileInputRef.current.click();
+    }
+  };
+
+  handlePhotoSelected = (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("uploadedphoto", file);
+
+    axios.post("/photos/new", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      },
+      withCredentials: true
+    })
+      .then(() => {
+        if (this.props.onPhotoUploaded) {
+          this.props.onPhotoUploaded();
+        }
+        if (this.props.loggedInUser) {
+          this.props.history.push(`/photos/${this.props.loggedInUser._id}`);
+        }
+      })
+      .catch((err) => {
+        console.error("Error uploading photo:", err);
+        console.error("Unable to upload photo.");
+      })
+      .finally(() => {
+        event.target.value = "";
+      });
+  };
+
   render() {
     const { loggedInUser } = this.props;
     return (
@@ -66,6 +104,20 @@ class TopBar extends React.Component {
             <Grid item>
               {loggedInUser ? (
                 <Grid container alignItems="center" spacing={1}>
+                  <Grid item>
+                    <input
+                      ref={this.fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={this.handlePhotoSelected}
+                    />
+                  </Grid>
+                  <Grid item>
+                    <Button color="inherit" onClick={this.handleAddPhotoClick} size="small" variant="outlined">
+                      Add Photo
+                    </Button>
+                  </Grid>
                   <Grid item>
                     <Typography variant="subtitle1" color="inherit">
                       Hi {loggedInUser.first_name}
