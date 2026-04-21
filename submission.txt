@@ -1,0 +1,30 @@
+Final Project - Submission Form
+
+Please fill in this form and submit it with your final project.
+
+Enter the user stories that your team worked on. For each story include the following information:
+
+Story number and name:
+Story points:
+Brief description to see the story in action:
+
+Total Story Points:
+
+Any special instructions for grading (it should be easy for someone to run your
+app from a new machine):
+
+************************************ Example ***********************************
+* As an example: if you did only story 5, your file would look like:
+* 
+* Story number and name:  5 - Activity Feed
+* Story points:  4
+* Brief description to see the story in action:
+* Push the button labeled Activity on the toolbar to view the 10 most recent
+* activities of the current user.
+* 
+* Total Story Points: 4
+* 
+* Any special instructions for grading (it should be easy for someone to run
+* your app from a new machine):
+* None
+************************************ Example ***********************************
