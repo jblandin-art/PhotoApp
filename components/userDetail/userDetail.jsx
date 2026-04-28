@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import {Box,Button,TextField} from '@mui/material';
 //import fetchModel from "../../lib/fetchModelData";
 import axios from 'axios';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
 
 /**
  * Define UserDetail, a React component of project #5
@@ -11,7 +14,10 @@ import axios from 'axios';
 class UserDetail extends React.Component {
   constructor(props) {
     super(props);
-    this.state= {user: undefined};
+    this.state= {
+      user: undefined,
+      mentioned : []
+    };
     this.userId = this.props.match.params.userId;
     this._isMounted = false;
   }
@@ -26,6 +32,13 @@ componentDidMount() {
         })
         .catch((err) => {
           console.error("Error fetching user:", err);
+        });
+    axios.get(`/photosWithMentions/${userId}`)
+        .then((response)=> {
+          this.setState({mentioned: response.data.photos});
+        })
+        .catch((err) => {
+          console.error("Error fetching mentioned:", err);
         });
   }
 
@@ -42,6 +55,14 @@ componentDidMount() {
       })
       .catch((err) => {
         console.error("Error fetching user:", err);
+      });
+
+      axios.get(`/photosWithMentions/${userId}`)
+        .then((response)=> {
+          this.setState({mentioned: response.data.photos});
+      })
+        .catch((err) => {
+          console.error("Error fetching mentioned:", err);
       });
   }
 
@@ -82,6 +103,26 @@ return this.state.user ? (
         <TextField id ="occupation" label = "Occupation" variant= "outlined" disabled fullWidth
       margin ="normal" 
       value={this.state.user.occupation}/>
+    </div>
+    <div>
+    <ImageList sx={{ width: 500, height: 450 }}>
+      {this.state.mentioned.map((photo) => (
+        <ImageListItem key={photo._id}>
+          <img
+            src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
+            alt={photo.file_name}
+            loading="lazy"
+            style = {{
+              aspectRatio: '1/1'
+            }}
+          />
+          <ImageListItemBar
+            title= {<span>{photo.owner.first_name} {photo.owner.last_name}</span>}
+            position="below"
+          />
+        </ImageListItem>
+      ))}
+    </ImageList>
     </div>
   </Box>
   </div>

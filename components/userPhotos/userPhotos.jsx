@@ -10,7 +10,6 @@ class UserPhotos extends React.Component {
     super(props);
     this.state = {
       photos: [],
-      newComment: '',
       newComments: {} // Stores new comments for each photo
     };
   }
