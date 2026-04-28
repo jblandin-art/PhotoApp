@@ -212,6 +212,39 @@ app.get("/user/:id", function (request, response) {
 });
 
 /**
+ * URL /users/mentionSearch - Returns a list of users matching a search string
+ * for the @mention autocomplete feature.
+ */
+app.get("/users/mentionSearch", function (request, response) {
+  const searchText = (request.query.search || "").trim();
+  
+  if (!searchText) {
+    return response.status(400).send("Missing search parameter");
+  }
+  // This finds users where the login_name or first_name matches what was typed
+  User.find({
+    $or: [
+      { login_name: { $regex: searchText, $options: "i" } },
+      { first_name: { $regex: searchText, $options: "i" } }
+    ]
+  })
+    .select("_id login_name first_name last_name")
+    .limit(8)
+    .then((users) => {
+      // Formats the data so the frontend can display "First Last (username)"
+      const suggestions = users.map(user => ({
+        id: user._id,
+        display: `${user.first_name} ${user.last_name} (${user.login_name})`
+      }));
+      response.status(200).send(suggestions);
+    })
+    .catch((err) => {
+      console.error("Error in /users/mentionSearch:", err);
+      response.status(500).send("An error occurred while searching for users");
+    });
+});
+
+/**
  * URL /photosOfUser/:id - Returns the Photos for User (id).
  */
 app.get("/photosOfUser/:id", function (req, res) {
