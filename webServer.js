@@ -249,6 +249,133 @@ app.get("/photosOfUser/:id", function (req, res) {
     });
 });
 
+/**
+ * URL /photosWithMentions/:user_id - Returns photos that contain comments
+ * which @mention the specified user.
+ */
+app.get("/photosWithMentions/:user_id", async function (request, response) {
+  const userId = request.params.user_id;
+
+  try {
+    const mentionedUser = await User.findById(userId, "_id first_name last_name");
+    if (!mentionedUser) {
+      return response.status(400).send("User not found");
+    }
+
+    const photos = await Photo.find({ "comments.mentions": userId }, "_id file_name date_time user_id comments")
+      .populate("user_id", "_id first_name last_name")
+      .exec();
+
+    const payload = photos.map((photo) => {
+      const photoObj = {
+        _id: photo._id,
+        file_name: photo.file_name,
+        date_time: photo.date_time,
+        user_id: photo.user_id && photo.user_id._id ? photo.user_id._id : photo.user_id,
+        owner: photo.user_id && photo.user_id._id ? {
+          _id: photo.user_id._id,
+          first_name: photo.user_id.first_name,
+          last_name: photo.user_id.last_name,
+        } : null,
+        mention_comments: [],
+      };
+
+      photo.comments.forEach((comment) => {
+        const mentionIds = (comment.mentions || []).map((id) => String(id));
+        if (mentionIds.includes(String(userId))) {
+          photoObj.mention_comments.push({
+            _id: comment._id,
+            comment: comment.comment,
+            date_time: comment.date_time,
+            user_id: comment.user_id,
+          });
+        }
+      });
+
+      return photoObj;
+    });
+
+    return response.status(200).json({
+      user: mentionedUser,
+      photos: payload,
+    });
+  } catch (err) {
+    if (err.name === "CastError") {
+      return response.status(400).send("Invalid user id");
+    }
+    console.error("Error in GET /photosWithMentions/:user_id:", err);
+    return response.status(500).send("Server error");
+  }
+});
+
+async function resolveMentionIds(commentText, requestMentionIds) {
+  const uniqueIds = new Set();
+
+  if (Array.isArray(requestMentionIds)) {
+    requestMentionIds.forEach((id) => {
+      if (id !== null && id !== undefined) {
+        uniqueIds.add(String(id).trim());
+      }
+    });
+  }
+
+  const mentionLoginNames = new Set();
+  const mentionRegex = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]+)/g;
+  let match = mentionRegex.exec(commentText);
+  while (match) {
+    mentionLoginNames.add(match[2]);
+    match = mentionRegex.exec(commentText);
+  }
+
+  if (mentionLoginNames.size > 0) {
+    const users = await User.find({
+      login_name: {
+        $in: Array.from(mentionLoginNames).map((name) => new RegExp(`^${name}$`, "i")),
+      },
+    }, "_id login_name");
+
+    const byLowerLogin = new Map();
+    users.forEach((user) => {
+      byLowerLogin.set(String(user.login_name).toLowerCase(), String(user._id));
+    });
+
+    const invalidLoginNames = [];
+    mentionLoginNames.forEach((name) => {
+      const foundId = byLowerLogin.get(String(name).toLowerCase());
+      if (!foundId) {
+        invalidLoginNames.push(name);
+      } else {
+        uniqueIds.add(foundId);
+      }
+    });
+
+    if (invalidLoginNames.length > 0) {
+      return {
+        ok: false,
+        message: `Invalid @mentions: ${invalidLoginNames.join(", ")}`,
+      };
+    }
+  }
+
+  const mentionIdList = Array.from(uniqueIds);
+  if (mentionIdList.length === 0) {
+    return { ok: true, mentionIds: [] };
+  }
+
+  const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id");
+  if (mentionUsersById.length !== mentionIdList.length) {
+    return {
+      ok: false,
+      message: "Invalid mention user id",
+    };
+  }
+
+  return {
+    ok: true,
+    mentionIds: mentionUsersById.map((user) => user._id),
+  };
+}
+
 app.post("/admin/login", async function (request, response) {
   const loginName = request.body.login_name;
   const password = request.body.password;
@@ -351,6 +478,7 @@ app.post("/user", async function (request, response) {
 app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
   const photoId = request.params.photo_id;
   const commentText = request.body.comment;
+  const requestMentionIds = request.body.mentions;
 
   if (!commentText || !String(commentText).trim()) {
     return response.status(400).send("Missing comment");
@@ -362,10 +490,16 @@ app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
       return response.status(400).send("Photo not found");
     }
 
+    const mentionResolution = await resolveMentionIds(String(commentText).trim(), requestMentionIds);
+    if (!mentionResolution.ok) {
+      return response.status(400).send(mentionResolution.message);
+    }
+
     const comment = {
       comment: String(commentText).trim(),
       date_time: new Date(),
       user_id: request.session.user._id,
+      mentions: mentionResolution.mentionIds,
     };
 
     photo.comments.push(comment);
@@ -377,6 +511,7 @@ app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
       _id: createdComment._id,
       comment: createdComment.comment,
       date_time: createdComment.date_time,
+      mentions: createdComment.mentions || [],
       user: {
         _id: request.session.user._id,
         first_name: request.session.user.first_name,
