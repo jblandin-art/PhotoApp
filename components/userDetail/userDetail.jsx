@@ -107,9 +107,9 @@ return this.state.user ? (
       value={this.state.user.occupation}/>
     </div>
     <div>
-    <ImageList sx={{ width: 500, height: 450 }}>
+    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={200}>
       {this.state.mentioned.map((photo) => (
-        <ImageListItem key={photo._id}>
+        <ImageListItem key={photo._id} component={Link} to={`/photos/${photo.owner._id}`}>
           <img
             src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
             alt={photo.file_name}
@@ -119,7 +119,7 @@ return this.state.user ? (
             }}
           />
           <ImageListItemBar
-            title= {<span>{photo.owner.first_name} {photo.owner.last_name}</span>}
+            title= {<Link to={`/users/${photo.owner._id}`}>{photo.owner._id}</Link>}
             position="below"
           />
         </ImageListItem>
