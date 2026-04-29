@@ -395,27 +395,6 @@ async function resolveMentionIds(commentText, requestMentionIds) {
   };
 }
 
-
-  const mentionIdList = Array.from(uniqueIds);
-  if (mentionIdList.length === 0) {
-    return { ok: true, mentionIds: [] };
-  }
-
-  const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id login_name first_name last_name");
-  if (mentionUsersById.length !== mentionIdList.length) {
-    return {
-      ok: false,
-      message: "Invalid mention user id",
-    };
-  }
-
-  return {
-    ok: true,
-    mentionIds: mentionUsersById.map((user) => user._id),
-    mentionUsers: mentionUsersById, // full objects for immediate response use
-  };
-}
-
 app.post("/admin/login", async function (request, response) {
   const loginName = request.body.login_name;
   const password = request.body.password;
