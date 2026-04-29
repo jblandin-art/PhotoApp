@@ -46,23 +46,25 @@ componentDidMount() {
     this._isMounted = false;
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps) {
     const userId = this.props.match.params.userId;
+    const prevUserId = prevProps.match.params.userId;
+    if (userId === prevUserId) return; // only re-fetch when the user route actually changes
 
-      axios.get(`/user/${userId}`)
+    axios.get(`/user/${userId}`)
       .then((response) => {
-        this.setState({user: response.data});
+        this.setState({ user: response.data });
       })
       .catch((err) => {
         console.error("Error fetching user:", err);
       });
 
-      axios.get(`/photosWithMentions/${userId}`)
-        .then((response)=> {
-          this.setState({mentioned: response.data.photos});
+    axios.get(`/photosWithMentions/${userId}`)
+      .then((response) => {
+        this.setState({ mentioned: response.data.photos });
       })
-        .catch((err) => {
-          console.error("Error fetching mentioned:", err);
+      .catch((err) => {
+        console.error("Error fetching mentioned:", err);
       });
   }
 

@@ -58,3 +58,51 @@
 	outline: none;
 	box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.18);
 }
+
+/* ── Mention autocomplete dropdown ────────────────────────────── */
+.mention-dropdown {
+	position: absolute;
+	bottom: calc(100% + 4px); /* appear above the input row */
+	left: 0;
+	right: 0;
+	background: #fff;
+	border: 1px solid #c5c5c5;
+	border-radius: 8px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	list-style: none;
+	margin: 0;
+	padding: 4px 0;
+	z-index: 200;
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.mention-dropdown-item {
+	padding: 8px 14px;
+	font-size: 13.5px;
+	cursor: pointer;
+	color: #222;
+	transition: background 0.1s ease;
+}
+
+.mention-dropdown-item:hover {
+	background: #e8f0fe;
+	color: #1a73e8;
+}
+
+/* ── Inline @mention link inside a comment ───────────────────── */
+.mention-highlight {
+	color: #1565c0;
+	font-weight: 600;
+	text-decoration: none;
+	background: rgba(21, 101, 192, 0.08);
+	border-radius: 4px;
+	padding: 0 3px;
+	transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mention-highlight:hover {
+	background: rgba(21, 101, 192, 0.18);
+	color: #0d47a1;
+	text-decoration: underline;
+}

@@ -11,10 +11,11 @@
  */
 
 // We use the Mongoose to define the schema stored in MongoDB.
+require('dotenv').config();
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
 mongoose.set("strictQuery", false);
-mongoose.connect("mongodb://127.0.0.1/project6", {
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1/project6", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

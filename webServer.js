@@ -252,6 +252,7 @@ app.get("/photosOfUser/:id", function (req, res) {
 
   Photo.find({ user_id: id }, '_id file_name date_time user_id comments')
     .populate('comments.user_id', '_id first_name last_name') // fetch only name fields
+    .populate('comments.mentions', '_id login_name first_name last_name') // populate mention users
     .exec(function (err, photos) {
       if (err) {
         if (err.name === "CastError") {
@@ -395,7 +396,7 @@ async function resolveMentionIds(commentText, requestMentionIds) {
     return { ok: true, mentionIds: [] };
   }
 
-  const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id");
+  const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id login_name first_name last_name");
   if (mentionUsersById.length !== mentionIdList.length) {
     return {
       ok: false,
@@ -406,6 +407,7 @@ async function resolveMentionIds(commentText, requestMentionIds) {
   return {
     ok: true,
     mentionIds: mentionUsersById.map((user) => user._id),
+    mentionUsers: mentionUsersById, // full objects for immediate response use
   };
 }
 
@@ -540,11 +542,14 @@ app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
 
     const createdComment = photo.comments[photo.comments.length - 1];
 
+    // Use the user objects already fetched during mention resolution — no extra DB call
+    const populatedMentions = mentionResolution.mentionUsers || [];
+
     return response.status(200).json({
       _id: createdComment._id,
       comment: createdComment.comment,
       date_time: createdComment.date_time,
-      mentions: createdComment.mentions || [],
+      mentions: populatedMentions,
       user: {
         _id: request.session.user._id,
         first_name: request.session.user.first_name,

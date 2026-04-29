@@ -419,4 +419,159 @@ describe("Photo App: Session and Input API Tests", function () {
        });
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Mention feature tests
+  // ─────────────────────────────────────────────────────────────────────────────
+  describe("mention feature - @mention in comments", function () {
+    let sessionCookie;
+    let tookUserId;
+    let otherUserId;       // the user we will @mention (we'll use "ajax")
+    let otherLoginName;
+    let testPhotoId;
+    let postedCommentId;
+
+    it("can login as took", function (done) {
+      axios.post(makeFullUrl("/admin/login"), { login_name: "took", password: "weak" })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          sessionCookie = response.headers["set-cookie"][0];
+          tookUserId = response.data._id;
+          done();
+        })
+        .catch(function () { assert.fail("Login failed"); });
+    });
+
+    it("can find another user to mention via /users/mentionSearch", function (done) {
+      axios.get(makeFullUrl("/users/mentionSearch?search=kenobi"), {
+        headers: { Cookie: sessionCookie },
+      })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          assert.ok(Array.isArray(response.data), "Response is an array");
+          assert.ok(response.data.length > 0, "At least one suggestion returned");
+          otherUserId = String(response.data[0].id);
+          // display is "First Last (login_name)"
+          const loginMatch = response.data[0].display.match(/\(([^)]+)\)$/);
+          otherLoginName = loginMatch ? loginMatch[1] : "kenobi";
+          done();
+        })
+        .catch(function (err) {
+          assert.fail("mentionSearch failed: " + err.message);
+        });
+    });
+
+    it("can get a photo id to comment on", function (done) {
+      axios.get(makeFullUrl("/photosOfUser/" + tookUserId), {
+        headers: { Cookie: sessionCookie },
+      })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          assert.ok(response.data.length > 0, "Took has at least one photo");
+          testPhotoId = response.data[0]._id;
+          done();
+        })
+        .catch(function () { assert.fail("Could not get photos"); });
+    });
+
+    it("can post a comment with a valid @mention and receives 200 with mentions array", function (done) {
+      const commentText = `Hello @${otherLoginName} check this out!`;
+      axios.post(
+        makeFullUrl("/commentsOfPhoto/" + testPhotoId),
+        { comment: commentText, mentions: [otherUserId] },
+        { headers: { Cookie: sessionCookie } }
+      )
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          assert.ok(Array.isArray(response.data.mentions), "Response contains mentions array");
+          assert.ok(
+            response.data.mentions.some((m) => String(m._id || m) === String(otherUserId)),
+            "Mentioned user id is in response mentions"
+          );
+          postedCommentId = response.data._id;
+          done();
+        })
+        .catch(function (err) {
+          assert.fail("Post comment with mention failed: " + (err.response && err.response.data));
+        });
+    });
+
+    it("photosOfUser response includes the comment with a populated mentions array", function (done) {
+      axios.get(makeFullUrl("/photosOfUser/" + tookUserId), {
+        headers: { Cookie: sessionCookie },
+      })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          // Find the photo we commented on
+          const photo = response.data.find((p) => p._id === testPhotoId);
+          assert.ok(photo, "Test photo found");
+          // Find the comment we just posted
+          const comment = photo.comments.find((c) => c._id === postedCommentId);
+          assert.ok(comment, "Posted comment found");
+          assert.ok(Array.isArray(comment.mentions), "mentions is an array");
+          assert.ok(comment.mentions.length > 0, "mentions array is non-empty");
+          // Each mention should be a populated object with _id and login_name
+          const mentionObj = comment.mentions[0];
+          assert.ok(mentionObj._id, "mention has _id");
+          assert.ok(mentionObj.login_name, "mention has login_name");
+          done();
+        })
+        .catch(function (err) { assert.fail("Could not verify mentions: " + err.message); });
+    });
+
+    it("photosWithMentions/:user_id returns the photo containing the mention", function (done) {
+      axios.get(makeFullUrl("/photosWithMentions/" + otherUserId), {
+        headers: { Cookie: sessionCookie },
+      })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          assert.ok(Array.isArray(response.data.photos), "Response has photos array");
+          const foundPhoto = response.data.photos.find((p) => p._id === testPhotoId);
+          assert.ok(foundPhoto, "The photo with our mention is returned");
+          assert.ok(
+            Array.isArray(foundPhoto.mention_comments) && foundPhoto.mention_comments.length > 0,
+            "mention_comments contains our comment"
+          );
+          done();
+        })
+        .catch(function (err) { assert.fail("photosWithMentions failed: " + err.message); });
+    });
+
+    it("rejects a comment with an invalid (non-existent) @mention username", function (done) {
+      axios.post(
+        makeFullUrl("/commentsOfPhoto/" + testPhotoId),
+        { comment: "hello @totallyfakeuser12345xyz" },
+        { headers: { Cookie: sessionCookie } }
+      )
+        .then(function () { assert.fail("Expected 400 error not received"); })
+        .catch(function (err) {
+          assert.strictEqual(err.response.status, 400, "HTTP 400 for invalid @mention");
+          done();
+        });
+    });
+
+    it("accepts a comment with an empty mentions array (no @mention)", function (done) {
+      axios.post(
+        makeFullUrl("/commentsOfPhoto/" + testPhotoId),
+        { comment: "just a plain comment", mentions: [] },
+        { headers: { Cookie: sessionCookie } }
+      )
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          assert.ok(Array.isArray(response.data.mentions), "mentions is an array");
+          assert.strictEqual(response.data.mentions.length, 0, "mentions array is empty");
+          done();
+        })
+        .catch(function (err) { assert.fail("Plain comment rejected: " + err.message); });
+    });
+
+    it("can logout", function (done) {
+      axios.post(makeFullUrl("/admin/logout"), {}, { headers: { Cookie: sessionCookie } })
+        .then(function (response) {
+          assert.strictEqual(response.status, 200, "HTTP 200");
+          done();
+        })
+        .catch(function () { assert.fail("Logout failed"); });
+    });
+  });
 });
