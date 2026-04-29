@@ -222,7 +222,7 @@ app.get("/users/mentionSearch", function (request, response) {
     return response.status(400).send("Missing search parameter");
   }
   // This finds users where the login_name or first_name matches what was typed
-  User.find({
+  return User.find({
     $or: [
       { login_name: { $regex: searchText, $options: "i" } },
       { first_name: { $regex: searchText, $options: "i" } }
@@ -347,7 +347,7 @@ async function resolveMentionIds(commentText, requestMentionIds) {
 
   if (Array.isArray(requestMentionIds)) {
     requestMentionIds.forEach((id) => {
-      if (id !== null && id !== undefined) {
+      if (id !== null && id !== undefined && mongoose.Types.ObjectId.isValid(String(id).trim())) {
         uniqueIds.add(String(id).trim());
       }
     });
@@ -373,23 +373,28 @@ async function resolveMentionIds(commentText, requestMentionIds) {
       byLowerLogin.set(String(user.login_name).toLowerCase(), String(user._id));
     });
 
-    const invalidLoginNames = [];
     mentionLoginNames.forEach((name) => {
       const foundId = byLowerLogin.get(String(name).toLowerCase());
-      if (!foundId) {
-        invalidLoginNames.push(name);
-      } else {
+      if (foundId) {
         uniqueIds.add(foundId);
       }
     });
-
-    if (invalidLoginNames.length > 0) {
-      return {
-        ok: false,
-        message: `Invalid @mentions: ${invalidLoginNames.join(", ")}`,
-      };
-    }
   }
+
+  const mentionIdList = Array.from(uniqueIds);
+  if (mentionIdList.length === 0) {
+    return { ok: true, mentionIds: [] };
+  }
+
+  const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id login_name first_name last_name");
+
+  return {
+    ok: true,
+    mentionIds: mentionUsersById.map((user) => user._id),
+    mentionUsers: mentionUsersById, // full objects for immediate response use
+  };
+}
+
 
   const mentionIdList = Array.from(uniqueIds);
   if (mentionIdList.length === 0) {
