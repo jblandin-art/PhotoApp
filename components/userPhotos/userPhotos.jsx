@@ -13,43 +13,57 @@ import axios from 'axios';
  *                            { _id, login_name, first_name, last_name }.
  */
 function renderCommentWithMentions(text, mentions) {
-  if (!text) return null;
+  if (text === null || text === undefined) return null;
+
+  const commentText = String(text);
+  if (commentText.length === 0) return null;
 
   // Build a quick lookup: login_name (lowercase) -> user object
-  const mentionMap = {};
+  const mentionMap = new Map();
   if (Array.isArray(mentions)) {
     mentions.forEach((u) => {
       if (u && u.login_name) {
-        mentionMap[u.login_name.toLowerCase()] = u;
+        mentionMap.set(String(u.login_name).toLowerCase(), u);
       }
     });
   }
 
-  // Split on @word boundaries, keeping the delimiters
-  const parts = text.split(/((?:^|(?<=[^A-Za-z0-9_]))@[A-Za-z0-9_]+)/u);
+  const mentionPattern = /(^|[^A-Za-z0-9_])@([A-Za-z0-9_]+)/g;
+  const nodes = [];
+  let lastIndex = 0;
+  let match = mentionPattern.exec(commentText);
 
-  return parts.map((part, i) => {
-    const atMatch = part.match(/^(.*?)@([A-Za-z0-9_]+)$/);
-    if (atMatch) {
-      const prefix = atMatch[1]; // text before the @
-      const token = atMatch[2];
-      const user = mentionMap[token.toLowerCase()];
-      if (user) {
-        return (
-          <span key={i}>
-            {prefix}
-            <Link to={`/users/${user._id}`} className="mention-highlight">
-              @{token}
-            </Link>
-          </span>
-        );
-      }
-      // Not a known mention — render as plain text
-      return <span key={i}>{part}</span>;
+  while (match) {
+    const token = match[2];
+    const mentionStart = match.index + match[1].length;
+    const mentionEnd = mentionPattern.lastIndex;
+
+    if (mentionStart > lastIndex) {
+      nodes.push(commentText.slice(lastIndex, mentionStart));
     }
-    return <span key={i}>{part}</span>;
-  });
+
+    const user = mentionMap.get(token.toLowerCase());
+    if (user && user._id) {
+      nodes.push(
+        <Link key={`${mentionStart}-${token}`} to={`/users/${user._id}`} className="mention-highlight">
+          @{token}
+        </Link>
+      );
+    } else {
+      nodes.push(commentText.slice(mentionStart, mentionEnd));
+    }
+
+    lastIndex = mentionEnd;
+    match = mentionPattern.exec(commentText);
+  }
+
+  if (lastIndex < commentText.length) {
+    nodes.push(commentText.slice(lastIndex));
+  }
+
+  return nodes.length > 0 ? nodes : commentText;
 }
+
 
 class UserPhotos extends React.Component {
   constructor(props) {
@@ -84,7 +98,7 @@ class UserPhotos extends React.Component {
    * Detects if the caret is right after an @-triggered word and returns
    * the query text, or null if not in a mention context.
    */
-  getMentionQueryFromText(text) {
+  static getMentionQueryFromText(text) {
     // Look for the last @ that is at the start of a word
     const match = text.match(/(^|[\s])@([A-Za-z0-9_]*)$/);
     return match ? match[2] : null;
@@ -97,7 +111,7 @@ class UserPhotos extends React.Component {
       newComments: { ...prevState.newComments, [photoId]: value },
     }));
 
-    const query = this.getMentionQueryFromText(value);
+    const query = UserPhotos.getMentionQueryFromText(value);
     if (query !== null) {
       // User is typing a mention — update the active query
       this.setState((prevState) => ({
