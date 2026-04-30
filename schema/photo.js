@@ -25,7 +25,7 @@ const photoSchema = new mongoose.Schema({
   // The date and time when the photo was added to the database.
   date_time: { type: Date, default: Date.now },
   // The ID of the user who created the photo.
-  user_id: mongoose.Schema.Types.ObjectId,
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   // Array of comment objects representing the comments made on this photo.
   comments: [commentSchema],
 });

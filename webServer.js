@@ -272,6 +272,9 @@ app.get("/photosOfUser/:id", function (req, res) {
         photo.comments.forEach(c => {
           c.user = c.user_id;
           delete c.user_id;
+          if (!c.mentions || c.mentions.length === 0) {
+            delete c.mentions;
+          }
         });
       });
 
@@ -297,20 +300,27 @@ app.get("/photosWithMentions/:user_id", async function (request, response) {
     }
 
     const photos = await Photo.find({ "comments.mentions": userId }, "_id file_name date_time user_id comments")
-      .populate("user_id", "_id first_name last_name")
+      .lean()
       .exec();
 
+    const ownerIds = Array.from(new Set(photos.map((photo) => String(photo.user_id))));
+    const owners = await User.find({ _id: { $in: ownerIds } }, "_id first_name last_name").lean().exec();
+    const ownerById = new Map(owners.map((owner) => [String(owner._id), owner]));
+
     const payload = photos.map((photo) => {
+      const ownerData = ownerById.get(String(photo.user_id)) || null;
+      const owner = ownerData ? {
+        _id: String(ownerData._id),
+        first_name: ownerData.first_name || "",
+        last_name: ownerData.last_name || "",
+      } : null;
+
       const photoObj = {
         _id: photo._id,
         file_name: photo.file_name,
         date_time: photo.date_time,
-        user_id: photo.user_id && photo.user_id._id ? photo.user_id._id : photo.user_id,
-        owner: photo.user_id && photo.user_id._id ? {
-          _id: photo.user_id._id,
-          first_name: photo.user_id.first_name,
-          last_name: photo.user_id.last_name,
-        } : null,
+        user_id: String(photo.user_id),
+        owner: owner,
         mention_comments: [],
       };
 
@@ -344,13 +354,27 @@ app.get("/photosWithMentions/:user_id", async function (request, response) {
 
 async function resolveMentionIds(commentText, requestMentionIds) {
   const uniqueIds = new Set();
+  const invalidMentionIds = [];
 
   if (Array.isArray(requestMentionIds)) {
     requestMentionIds.forEach((id) => {
-      if (id !== null && id !== undefined && mongoose.Types.ObjectId.isValid(String(id).trim())) {
-        uniqueIds.add(String(id).trim());
+      if (id === null || id === undefined) {
+        return;
       }
+      const normalizedId = String(id).trim();
+      if (!mongoose.Types.ObjectId.isValid(normalizedId)) {
+        invalidMentionIds.push(normalizedId);
+        return;
+      }
+      uniqueIds.add(normalizedId);
     });
+  }
+
+  if (invalidMentionIds.length > 0) {
+    return {
+      ok: false,
+      message: "Invalid mention user id",
+    };
   }
 
   const mentionLoginNames = new Set();
@@ -373,12 +397,22 @@ async function resolveMentionIds(commentText, requestMentionIds) {
       byLowerLogin.set(String(user.login_name).toLowerCase(), String(user._id));
     });
 
+    const invalidLoginNames = [];
     mentionLoginNames.forEach((name) => {
       const foundId = byLowerLogin.get(String(name).toLowerCase());
       if (foundId) {
         uniqueIds.add(foundId);
+      } else {
+        invalidLoginNames.push(name);
       }
     });
+
+    if (invalidLoginNames.length > 0) {
+      return {
+        ok: false,
+        message: `Invalid @mentions: ${invalidLoginNames.join(", ")}`,
+      };
+    }
   }
 
   const mentionIdList = Array.from(uniqueIds);
@@ -387,6 +421,12 @@ async function resolveMentionIds(commentText, requestMentionIds) {
   }
 
   const mentionUsersById = await User.find({ _id: { $in: mentionIdList } }, "_id login_name first_name last_name");
+  if (mentionUsersById.length !== mentionIdList.length) {
+    return {
+      ok: false,
+      message: "Invalid mention user id",
+    };
+  }
 
   return {
     ok: true,

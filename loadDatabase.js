@@ -139,8 +139,7 @@ Promise.all(removePromises)
     });
 
     allPromises.then(function () {
-      mongoose.disconnect()
-           .then(() =>{console.log("loadDatabase Completed");});
+      mongoose.disconnect();
     });
   })
   .catch(function (err) {

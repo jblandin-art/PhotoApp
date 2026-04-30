@@ -3,7 +3,6 @@ import { Typography, Card, CardContent, Divider, List, ListItem } from '@mui/mat
 import { Link } from 'react-router-dom';
 import './userPhotos.css';
 import axios from 'axios';
-import { HashLink } from 'react-router-hash-link';
 
 /**
  * Parses comment text and renders @mentions as clickable profile links.
@@ -212,6 +211,7 @@ class UserPhotos extends React.Component {
       .catch((err) => {
         const msg = err.response && err.response.data ? err.response.data : err.message;
         console.error("Error adding comment:", msg);
+        // eslint-disable-next-line no-alert
         alert(`Could not post comment: ${msg}`);
       });
   };
@@ -253,7 +253,7 @@ class UserPhotos extends React.Component {
           return (
             <Card key={photo._id} variant="outlined" style={{ marginBottom: '20px' }}>
               <CardContent>
-                <a id={photo._id}></a>
+                <div id={photo._id} />
                 <Typography variant="subtitle2" color="textSecondary">
                   Posted on: {photo.date_time}
                 </Typography>
@@ -290,8 +290,7 @@ class UserPhotos extends React.Component {
                           <Divider variant="inset" style={{ width: '100%', margin: '10px 0' }} />
                         </ListItem>
                       ))
-                    : <Typography variant="body2">No comments yet.</Typography>
-                  }
+                    : <Typography variant="body2">No comments yet.</Typography>}
                 </List>
 
                 {/* Comment input with @mention autocomplete */}

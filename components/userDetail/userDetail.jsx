@@ -1,7 +1,7 @@
 import React from 'react';
 import './userDetail.css';
 import { Link } from 'react-router-dom';
-import {Box,Button,TextField} from '@mui/material';
+import {Box,Button,TextField,Typography} from '@mui/material';
 //import fetchModel from "../../lib/fetchModelData";
 import axios from 'axios';
 import ImageList from '@mui/material/ImageList';
@@ -36,6 +36,7 @@ componentDidMount() {
         });
     axios.get(`/photosWithMentions/${userId}`)
         .then((response)=> {
+          console.log("photosWithMentions response:", response.data);
           this.setState({mentioned: response.data.photos});
         })
         .catch((err) => {
@@ -108,29 +109,37 @@ return this.state.user ? (
       value={this.state.user.occupation}/>
     </div>
     <div>
-      <h2 variant="subtitle2" color="textSecondary">
+      <Typography variant="subtitle2" color="textSecondary">
         Comments that mention {this.state.user.first_name}:
-      </h2>
+      </Typography>
     </div>
     <div>
-    <ImageList sx={{ width: 750, height: 450 }} cols={3} rowHeight={300}>
-      {this.state.mentioned.map((photo) => (
-        <ImageListItem key={photo._id} component={HashLink} smooth to={`/photos/${photo.owner._id}#${photo._id}`}>
-          <img
-            src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
-            alt={photo.file_name}
-            loading="lazy"
-            style = {{
-              aspectRatio: '1/1'
-            }}
-          />
-          <ImageListItemBar
-            title= {<Link to={`/users/${photo.owner._id}`}>{photo.owner._id}</Link>}
-            position="below"
-          />
-        </ImageListItem>
-      ))}
-    </ImageList>
+    {this.state.mentioned && this.state.mentioned.length > 0 ? (
+      <ImageList sx={{ width: 750, height: 450 }} cols={3} rowHeight={300}>
+        {this.state.mentioned.map((photo) => (
+          <ImageListItem key={photo._id} component={HashLink} smooth to={`/photos/${photo.owner._id}#${photo._id}`}>
+            <img
+              src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
+              alt={photo.file_name}
+              loading="lazy"
+              style = {{
+                aspectRatio: '1/1'
+              }}
+            />
+            <ImageListItemBar
+              title= {<Link to={`/users/${photo.owner._id}`}>{photo.owner.first_name} {photo.owner.last_name}</Link>}
+              position="below"
+            />
+          </ImageListItem>
+        ))}
+      </ImageList>
+    ) : (
+      <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
+        <Typography variant="body1" color="textSecondary">
+          {this.state.user.first_name} hasn&apos;t been mentioned in any photos yet.
+        </Typography>
+      </Box>
+    )}
     </div>
   </Box>
   </div>
