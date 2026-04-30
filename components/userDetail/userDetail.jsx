@@ -7,6 +7,7 @@ import axios from 'axios';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
+import { HashLink } from 'react-router-hash-link';
 
 /**
  * Define UserDetail, a React component of project #5
@@ -107,9 +108,14 @@ return this.state.user ? (
       value={this.state.user.occupation}/>
     </div>
     <div>
-    <ImageList sx={{ width: 500, height: 450 }} cols={3} rowHeight={200}>
+      <h2 variant="subtitle2" color="textSecondary">
+        Comments that mention {this.state.user.first_name}:
+      </h2>
+    </div>
+    <div>
+    <ImageList sx={{ width: 750, height: 450 }} cols={3} rowHeight={300}>
       {this.state.mentioned.map((photo) => (
-        <ImageListItem key={photo._id} component={Link} to={`/photos/${photo.owner._id}`}>
+        <ImageListItem key={photo._id} component={HashLink} smooth to={`/photos/${photo.owner._id}#${photo._id}`}>
           <img
             src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
             alt={photo.file_name}

@@ -3,6 +3,7 @@ import { Typography, Card, CardContent, Divider, List, ListItem } from '@mui/mat
 import { Link } from 'react-router-dom';
 import './userPhotos.css';
 import axios from 'axios';
+import { HashLink } from 'react-router-hash-link';
 
 /**
  * Parses comment text and renders @mentions as clickable profile links.
@@ -252,6 +253,7 @@ class UserPhotos extends React.Component {
           return (
             <Card key={photo._id} variant="outlined" style={{ marginBottom: '20px' }}>
               <CardContent>
+                <a id={photo._id}></a>
                 <Typography variant="subtitle2" color="textSecondary">
                   Posted on: {photo.date_time}
                 </Typography>
@@ -262,7 +264,6 @@ class UserPhotos extends React.Component {
                 />
 
                 <Divider style={{ margin: '15px 0' }} />
-
                 {/* Comments list */}
                 <Typography variant="h6">Comments</Typography>
                 <List>
