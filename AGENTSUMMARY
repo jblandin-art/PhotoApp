@@ -1,0 +1,39 @@
+Codebase summary for other agents
+---------------------------------
+
+This repository is a photo-sharing web app built with React on the front end and Express + Mongoose on the back end. It serves a MongoDB-backed experience where users can log in, browse other users, view photos, leave comments, mention other users with @mentions, and upload new photos.
+
+### What each part does
+
+-   [webServer.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Main server entry point. Handles Express routing, session-based authentication, MongoDB connection, and API endpoints for users, photos, comments, mentions, login/logout, and photo upload.
+-   [photoShare.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Top-level React app. Manages login state and routes between the main views.
+-   [TopBar.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Global header with app title, context label, photo upload action, and logout.
+-   [userList.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Left-side user list navigation.
+-   [userDetail.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): User profile/detail page with links to that user's photos and mention-based photo highlights.
+-   [userPhotos.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Photo gallery view with comment support and @mention autocomplete.
+-   [LoginRegister.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Login and registration UI.
+-   [user.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html) and [photo.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Mongoose schemas for users, photos, and comments.
+-   [loadDatabase.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Seeds the database from the legacy mock model data.
+-   [photoApp.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Static sample data used for initialization and tests.
+-   [test](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html): Mocha-based API tests that exercise the server endpoints.
+
+### Runtime flow
+
+1.  Start MongoDB locally.
+2.  Run the server with `nodemon webServer.js` or `node webServer.js`.
+3.  Load sample data with `node loadDatabase.js`.
+4.  Open the app, log in or register, then browse users and photos.
+
+### Important implementation notes
+
+-   Authentication is session-based and enforced for most routes.
+-   The app uses HashRouter for client-side routing.
+-   Photo comments support mention links via the [/users/mentionSearch](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html) endpoint.
+-   The project is bundled with Webpack and uses Material UI for layout and components.
+
+### Likely places to inspect first
+
+-   If you are debugging API behavior: [webServer.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
+-   If you are debugging UI flow: [photoShare.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
+-   If you are debugging comments/mentions: [userPhotos.jsx](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html)
+-   If you are debugging data shape: [photo.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html) and [user.js](vscode-file://vscode-app/c:/Users/coder/AppData/Local/Programs/Microsoft%20VS%20Code/e4c7e7b1d6/resources/app/out/vs/code/electron-browser/workbench/workbench.html)

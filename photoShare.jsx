@@ -83,12 +83,14 @@ class PhotoShare extends React.Component {
               />
             </Grid>
             <div className="main-topbar-buffer" />
-            <Grid item sm={3}>
-              <Paper className="main-grid-item">
-                {this.isLoggedIn() ? <UserList /> : null}
-              </Paper>
-            </Grid>
-            <Grid item sm={9}>
+            {this.isLoggedIn() && (
+              <Grid item sm={3}>
+                <Paper className="main-grid-item">
+                  <UserList />
+                </Paper>
+              </Grid>
+            )}
+            <Grid item sm={this.isLoggedIn() ? 9 : 12}>
               <Paper className="main-grid-item">
                 <Switch>
                   <Route path="/login-register" render={props => (
@@ -120,10 +122,13 @@ class PhotoShare extends React.Component {
                       />
                     ) : <Redirect to="/login-register" />
                   )} />
-
-                  <Route path="/users" render={props => (
-                    this.isLoggedIn() ? <UserList {...props} /> : <Redirect to="/login-register" />
-                  )} />
+                  <Route path="/users" render={() => (
+                      this.isLoggedIn()
+                        ? <Typography variant="body1">
+                            Select a user to view their details.
+                          </Typography>
+                        : <Redirect to="/login-register" />
+                    )} />
                 </Switch>
               </Paper>
             </Grid>

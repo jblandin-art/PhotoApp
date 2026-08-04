@@ -93,7 +93,7 @@ class TopBar extends React.Component {
           <Grid container justifyContent="space-between" alignItems="center">
             <Grid item>
               <Typography variant="h5" color="inherit">
-                Abhi Ankem
+                PhotoApp
               </Typography>
             </Grid>
             <Grid item>
@@ -104,6 +104,11 @@ class TopBar extends React.Component {
             <Grid item>
               {loggedInUser ? (
                 <Grid container alignItems="center" spacing={1}>
+                  <Grid item>
+                    <Typography variant="subtitle1" color="inherit">
+                      Hi {loggedInUser.first_name}
+                    </Typography>
+                  </Grid>
                   <Grid item>
                     <input
                       ref={this.fileInputRef}
@@ -117,11 +122,6 @@ class TopBar extends React.Component {
                     <Button color="inherit" onClick={this.handleAddPhotoClick} size="small" variant="outlined">
                       Add Photo
                     </Button>
-                  </Grid>
-                  <Grid item>
-                    <Typography variant="subtitle1" color="inherit">
-                      Hi {loggedInUser.first_name}
-                    </Typography>
                   </Grid>
                   <Grid item>
                     <Button color="inherit" onClick={this.handleLogout} size="small" variant="outlined">

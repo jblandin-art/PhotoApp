@@ -25,8 +25,10 @@ require('dotenv').config();
 
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
+const serverless = require("serverless-http");
 
 const async = require("async");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const express = require("express");
 const app = express();
@@ -39,17 +41,87 @@ const multer = require("multer");
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
+const MongoStore = require("connect-mongo").default || require("connect-mongo");
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+const S3_BUCKET = process.env.S3_BUCKET;
+
+async function uploadPhotoToS3(fileBuffer, filename, contentType) {
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: filename,
+    Body: fileBuffer,
+    ContentType: contentType || "application/octet-stream",
+    ACL: "public-read",
+  });
+
+  await s3Client.send(command);
+
+  const region = process.env.AWS_REGION || "us-east-1";
+  return `https://${S3_BUCKET}.s3.${region}.amazonaws.com/${encodeURIComponent(filename)}`;
+}
 
 // Express session and other new modules
 const processFormBody = multer({
  storage: multer.memoryStorage()
 }).single('uploadedphoto');
 
-app.use(session({secret: "secretKey", resave: false, saveUninitialized: false}));
-
 app.use(bodyParser.json());
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
+// Deprecated option to serve static files from the "images" directory 
+//app.use('/images', express.static(path.join(__dirname, 'images')));
+
+// XXX - Your submission should work without this line. Comment out or delete
+// this line for tests and before submission!
+//const models = require("./modelData/photoApp.js").models;
+mongoose.set("strictQuery", false);
+
+let cachedDb = null;
+
+async function connectToDatabase() {
+  if (cachedDb) {
+    return cachedDb;
+  }
+
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is not set");
+  }
+
+  cachedDb = await mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  return cachedDb;
+}
+
+connectToDatabase().catch((err) => {
+  console.error("MongoDB connection error:", err.message);
+});
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || "secretKey",
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions',
+    ttl: 14 * 24 * 60 * 60 // 14 days
+  }),
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7
+  }
+}));
+
 // Authentication middleware: protect all routes except login/logout/test
 app.use((req, res, next) => {
   if (
@@ -78,16 +150,6 @@ app.get('/me', function (req, res) {
     return res.status(401).send('Unauthorized');
   }
   return res.status(200).json(req.session.user);
-});
-
-
-// XXX - Your submission should work without this line. Comment out or delete
-// this line for tests and before submission!
-//const models = require("./modelData/photoApp.js").models;
-mongoose.set("strictQuery", false);
-mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1/project6", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
 });
 
 // We have the express static module
@@ -598,47 +660,50 @@ app.post("/photos/new", function (request, response) {
   const user_id = request.session.user._id;
 
   // 2. Process the the file upload
-  return processFormBody(request, response, function (err) {
+  return processFormBody(request, response, async function (err) {
     if (err || !request.file) {
       console.error("Error in /photos/new: No file provided", err);
       return response.status(400).send("photo required");
+    }
+
+    if (!S3_BUCKET || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      return response.status(500).send(
+        "S3 upload is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and S3_BUCKET."
+      );
     }
 
     // 3. Create a unique filename
     const timestamp = new Date().valueOf();
     const filename = 'U' + String(timestamp) + request.file.originalname;
 
-    // 4. Write the file to the images directory
-    return fs.writeFile("./images/" + filename, request.file.buffer, function (err1) {
-      if (err1) {
-        console.error("Error writing photo to disk:", err1);
-        return response.status(400).send("error writing photo");
-      }
+    try {
+      const imageUrl = await uploadPhotoToS3(request.file.buffer, filename, request.file.mimetype);
 
-      // 5. Create the Photo document in MongoDB
-      return Photo.create({
-        file_name: filename,
+      await Photo.create({
+        file_name: imageUrl,
         date_time: new Date(),
         user_id: new mongoose.Types.ObjectId(user_id),
-        comments: [] // Note: your schema uses 'comments' (plural), based on your /photosOfUser route
-      })
-      .then(() => {
-        return response.status(200).send("Photo uploaded successfully");
-      })
-      .catch(err2 => {
-        console.error("Error saving Photo to database:", err2);
-        return response.status(500).send("Database error");
+        comments: []
       });
-    });
+
+      return response.status(200).send("Photo uploaded successfully");
+    } catch (err2) {
+      console.error("Error uploading photo to S3:", err2);
+      return response.status(500).send(err2 && err2.message ? err2.message : "Database error");
+    }
   });
 });
 
-const server = app.listen(3000, function () {
-  const port = server.address().port;
-  console.log(
-    "Listening at http://localhost:" +
-      port +
-      " exporting the directory " +
-      __dirname
-  );
-});
+if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  const port = process.env.PORT || 3000;
+  app.listen(port, function () {
+    console.log(
+      "Listening at http://localhost:" +
+        port +
+        " exporting the directory " +
+        __dirname
+    );
+  });
+}
+
+module.exports.handler = serverless(app);

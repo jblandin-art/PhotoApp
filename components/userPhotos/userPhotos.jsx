@@ -258,7 +258,7 @@ class UserPhotos extends React.Component {
                   Posted on: {photo.date_time}
                 </Typography>
                 <img
-                  src={`/images/${photo.file_name}`}
+                  src={photo.file_name && photo.file_name.startsWith('http') ? photo.file_name : `/images/${photo.file_name}`}
                   alt={photo.file_name}
                   style={{ width: '100%', marginTop: '10px' }}
                 />

@@ -116,22 +116,28 @@ return this.state.user ? (
     <div>
     {this.state.mentioned && this.state.mentioned.length > 0 ? (
       <ImageList sx={{ width: 750, height: 450 }} cols={3} rowHeight={300}>
-        {this.state.mentioned.map((photo) => (
-          <ImageListItem key={photo._id} component={HashLink} smooth to={`/photos/${photo.owner._id}#${photo._id}`}>
-            <img
-              src={`/images/${photo.file_name}?w=248&fit=crop&auto=format`}
-              alt={photo.file_name}
-              loading="lazy"
-              style = {{
-                aspectRatio: '1/1'
-              }}
-            />
-            <ImageListItemBar
-              title= {<Link to={`/users/${photo.owner._id}`}>{photo.owner.first_name} {photo.owner.last_name}</Link>}
-              position="below"
-            />
-          </ImageListItem>
-        ))}
+        {this.state.mentioned.map((photo) => {
+          const imageSrc = photo.file_name && photo.file_name.startsWith('http')
+            ? photo.file_name
+            : `/images/${photo.file_name}`;
+
+          return (
+            <ImageListItem key={photo._id} component={HashLink} smooth to={`/photos/${photo.owner._id}#${photo._id}`}>
+              <img
+                src={`${imageSrc}?w=248&fit=crop&auto=format`}
+                alt={photo.file_name}
+                loading="lazy"
+                style = {{
+                  aspectRatio: '1/1'
+                }}
+              />
+              <ImageListItemBar
+                title= {<Link to={`/users/${photo.owner._id}`}>{photo.owner.first_name} {photo.owner.last_name}</Link>}
+                position="below"
+              />
+            </ImageListItem>
+          );
+        })}
       </ImageList>
     ) : (
       <Box sx={{ textAlign: 'center', py: 4, px: 2 }}>
