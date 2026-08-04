@@ -681,6 +681,7 @@ app.post("/photos/new", function (request, response) {
   });
 });
 
+/*
 if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
   const port = process.env.PORT || 3000;
   app.listen(port, function () {
@@ -692,5 +693,7 @@ if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
     );
   });
 }
+  */
 
-module.exports.handler = serverless(app);
+
+module.exports = serverless(app);
