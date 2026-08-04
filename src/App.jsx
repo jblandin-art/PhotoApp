@@ -68,8 +68,8 @@ class PhotoShare extends React.Component {
   render() {
     // Wait for login check before rendering routes
     if (!this.state.checkedLogin) {
-      return null;
-    }
+    return <Typography variant="body1" style={{ padding: 24 }}>Loading...</Typography>;
+      }
     return (
       <HashRouter>
         <div>
