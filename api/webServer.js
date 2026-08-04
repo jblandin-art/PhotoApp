@@ -97,6 +97,8 @@ async function connectToDatabase() {
   cachedDb = await mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+    connectTimeoutMS: 5000, // 5 seconds timeout
   });
 
   return cachedDb;
