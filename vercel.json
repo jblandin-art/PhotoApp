@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    { "source": "/admin/:path*", "destination": "/api/webServer" },
+    { "source": "/user/:path*", "destination": "/api/webServer" },
+    { "source": "/users/:path*", "destination": "/api/webServer" },
+    { "source": "/photosOfUser/:path*", "destination": "/api/webServer" },
+    { "source": "/photosWithMentions/:path*", "destination": "/api/webServer" },
+    { "source": "/commentsOfPhoto/:path*", "destination": "/api/webServer" },
+    { "source": "/photos/:path*", "destination": "/api/webServer" },
+    { "source": "/me", "destination": "/api/webServer" },
+    { "source": "/test/:path*", "destination": "/api/webServer" }
+  ]
+}
