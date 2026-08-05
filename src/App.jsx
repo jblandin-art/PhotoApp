@@ -1,13 +1,9 @@
 import React from 'react';
 import {
   HashRouter, Route, Switch,
- Redirect } from 'react-router-dom';
-import {
-  Grid, Typography, Paper
-} from '@mui/material';
+  Redirect
+} from 'react-router-dom';
 import './styles/main.css';
-
-// import necessary components
 
 import axios from 'axios';
 import TopBar from './components/topBar/TopBar';
@@ -16,35 +12,28 @@ import UserList from './components/userList/userList';
 import UserPhotos from './components/userPhotos/userPhotos';
 import LoginRegister from './components/LoginRegister/LoginRegister';
 
-
-
 class PhotoShare extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       loggedInUser: null,
       checkedLogin: false,
-      photoRefreshCounter: 0
+      photoRefreshCounter: 0,
+      sidebarOpen: false, // collapsed by default on mobile
     };
 
     axios.defaults.withCredentials = true;
   }
-  
 
   componentDidMount() {
-    console.log("componentDidMount running");
-    // Check if user is already logged in (session) using /me endpoint
     axios.get('/me', { withCredentials: true })
       .then((response) => {
-        console.log("User is logged in:", response.data);
         this.setState({ loggedInUser: response.data, checkedLogin: true });
       })
-      .catch((error) => {
-        console.log("User is not logged in:", error.response?.data || error.message);
+      .catch(() => {
         this.setState({ loggedInUser: null, checkedLogin: true });
       });
   }
-
 
   handleLogin = (user) => {
     this.setState({ loggedInUser: user });
@@ -52,15 +41,9 @@ class PhotoShare extends React.Component {
 
   handleLogout = () => {
     axios.post('/admin/logout')
-      .then(() => {
-        this.setState({ loggedInUser: null });
-      })
-      .catch(() => {
-        this.setState({ loggedInUser: null });
-      });
+      .then(() => this.setState({ loggedInUser: null }))
+      .catch(() => this.setState({ loggedInUser: null }));
   };
-  
-  
 
   handlePhotoUploaded = () => {
     this.setState((prevState) => ({
@@ -68,38 +51,38 @@ class PhotoShare extends React.Component {
     }));
   };
 
-  isLoggedIn = () => {
-    return !!this.state.loggedInUser;
+  isLoggedIn = () => !!this.state.loggedInUser;
+
+  toggleSidebar = () => {
+    this.setState((prev) => ({ sidebarOpen: !prev.sidebarOpen }));
   };
 
-
-
   render() {
-    // Wait for login check before rendering routes
     if (!this.state.checkedLogin) {
-    return <Typography variant="body1" style={{ padding: 24 }}>Loading...</Typography>;
-      }
+      return <p className="ps-loading">Loading…</p>;
+    }
+
     return (
       <HashRouter>
-        <div>
-          <Grid container spacing={8}>
-            <Grid item xs={12}>
-              <TopBar
-                loggedInUser={this.state.loggedInUser}
-                onLogout={this.handleLogout}
-                onPhotoUploaded={this.handlePhotoUploaded}
-              />
-            </Grid>
-            <div className="main-topbar-buffer" />
+        <div className="ps-app">
+          <TopBar
+            loggedInUser={this.state.loggedInUser}
+            onLogout={this.handleLogout}
+            onPhotoUploaded={this.handlePhotoUploaded}
+            onToggleSidebar={this.isLoggedIn() ? this.toggleSidebar : undefined}
+          />
+
+          <div className="ps-body">
             {this.isLoggedIn() && (
-              <Grid item sm={3}>
-                <Paper className="main-grid-item">
-                  <UserList />
-                </Paper>
-              </Grid>
+              <aside className={`ps-sidebar ${this.state.sidebarOpen ? 'ps-sidebar--open' : ''}`}>
+                <div className="ps-panel">
+                  <UserList onNavigate={() => this.setState({ sidebarOpen: false })} />
+                </div>
+              </aside>
             )}
-            <Grid item sm={this.isLoggedIn() ? 9 : 12}>
-              <Paper className="main-grid-item">
+
+            <main className="ps-main">
+              <div className="ps-panel">
                 <Switch>
                   <Route path="/login-register" render={props => (
                     <LoginRegister {...props} isLoggedIn={this.isLoggedIn()} onLogin={this.handleLogin} />
@@ -123,17 +106,16 @@ class PhotoShare extends React.Component {
                       />
                     ) : <Redirect to="/login-register" />
                   )} />
+
                   <Route path="/users" render={() => (
-                      this.isLoggedIn()
-                        ? <Typography variant="body1">
-                            Select a user to view their details.
-                          </Typography>
-                        : <Redirect to="/login-register" />
-                    )} />
+                    this.isLoggedIn()
+                      ? <p>Select a user to view their details.</p>
+                      : <Redirect to="/login-register" />
+                  )} />
                 </Switch>
-              </Paper>
-            </Grid>
-          </Grid>
+              </div>
+            </main>
+          </div>
         </div>
       </HashRouter>
     );

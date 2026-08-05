@@ -1,7 +1,92 @@
-.topbar-appBar {
-  height: 85px;
+.ps-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--ps-topbar-h);
+  z-index: 100;
+  background-color: #1976d2;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 25px;
+}
+
+.ps-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.ps-topbar-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ps-topbar-context {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+.ps-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ps-topbar-greeting {
+  font-size: 1.15rem;
+  white-space: nowrap;
+}
+
+.ps-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.ps-btn:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* Hamburger — only meaningful below the desktop breakpoint,
+   since the sidebar is always visible above it */
+.ps-hamburger {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  background-color: #2196f3;
-  padding: 10px;
-  z-index: 1201;
+  gap: 4px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.ps-hamburger span {
+  display: block;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
+}
+
+/* Narrow phones: drop the context line and greeting text to avoid crowding */
+@media (max-width: 480px) {
+  .ps-topbar-context { display: none; }
+  .ps-topbar-greeting { display: none; }
+}
+
+@media (min-width: 768px) {
+  .ps-hamburger { display: none; }
 }

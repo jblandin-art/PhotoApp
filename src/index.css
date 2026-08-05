@@ -13,3 +13,79 @@ main- here.
   height: calc(100vh - 85px);
   padding: 10px;
 }
+
+:root {
+  --ps-bg: #f7f7f8;
+  --ps-surface: #ffffff;
+  --ps-border: #e2e2e6;
+  --ps-text: #1c1c1f;
+  --ps-text-muted: #6b6b74;
+  --ps-accent: #3454d1;
+  --ps-radius: 10px;
+  --ps-topbar-h: 70px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ps-bg);
+  color: var(--ps-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.ps-loading { padding: 24px; color: var(--ps-text-muted); }
+
+.ps-app { min-height: 100vh; }
+
+/* mobile-first: sidebar and main stack vertically */
+.ps-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.ps-panel {
+  background: var(--ps-surface);
+  border: 1px solid var(--ps-border);
+  border-radius: var(--ps-radius);
+  margin: 12px;
+  padding: 16px;
+}
+
+/* Sidebar: collapsed off-canvas on mobile, opened via TopBar toggle */
+.ps-sidebar {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+.ps-sidebar--open {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.ps-main { flex: 1; min-width: 0; }
+
+.ps-app {
+  padding-top: var(--ps-topbar-h);
+}
+
+/* Tablet and up: side-by-side, sidebar always visible */
+@media (min-width: 768px) {
+  .ps-body {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .ps-sidebar {
+    max-height: none;
+    overflow: visible;
+    flex: 0 0 260px;
+    position: sticky;
+    top: var(--ps-topbar-h);
+  }
+  .ps-panel { margin: 16px 8px; }
+  .ps-main { flex: 1; }
+}
+
+@media (min-width: 1024px) {
+  .ps-panel { margin: 24px 16px; }
+}

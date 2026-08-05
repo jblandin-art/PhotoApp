@@ -1,8 +1,6 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Grid, Button } from '@mui/material';
-import { withRouter } from 'react-router-dom'; // Added this for Context Awareness
+import { withRouter } from 'react-router-dom';
 import './TopBar.css';
-//import fetchModel from '../../lib/fetchModelData';
 
 import axios from 'axios';
 
@@ -78,7 +76,6 @@ class TopBar extends React.Component {
       })
       .catch((err) => {
         console.error("Error uploading photo:", err);
-        console.error("Unable to upload photo.");
       })
       .finally(() => {
         event.target.value = "";
@@ -86,58 +83,54 @@ class TopBar extends React.Component {
   };
 
   render() {
-    const { loggedInUser } = this.props;
+    const { loggedInUser, onToggleSidebar } = this.props;
+    const { contextText } = this.state;
+
     return (
-      <AppBar className="topbar-appBar" position="absolute">
-        <Toolbar>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item>
-              <Typography variant="h5" color="inherit">
-                PhotoApp
-              </Typography>
-            </Grid>
-            <Grid item>
-              <Typography variant="h5" color="inherit">
-                {this.state.contextText}
-              </Typography>
-            </Grid>
-            <Grid item>
-              {loggedInUser ? (
-                <Grid container alignItems="center" spacing={1}>
-                  <Grid item>
-                    <Typography variant="subtitle1" color="inherit">
-                      Hi {loggedInUser.first_name}
-                    </Typography>
-                  </Grid>
-                  <Grid item>
-                    <input
-                      ref={this.fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={this.handlePhotoSelected}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Button color="inherit" onClick={this.handleAddPhotoClick} size="small" variant="outlined">
-                      Add Photo
-                    </Button>
-                  </Grid>
-                  <Grid item>
-                    <Button color="inherit" onClick={this.handleLogout} size="small" variant="outlined">
-                      Logout
-                    </Button>
-                  </Grid>
-                </Grid>
-              ) : (
-                <Typography variant="subtitle1" color="inherit">
-                  Please Login
-                </Typography>
-              )}
-            </Grid>
-          </Grid>
-        </Toolbar>
-      </AppBar>
+      <header className="ps-topbar">
+        <div className="ps-topbar-left">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              className="ps-hamburger"
+              aria-label="Toggle user list"
+              onClick={onToggleSidebar}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          )}
+          <span className="ps-topbar-title">PhotoApp</span>
+        </div>
+
+        {contextText && (
+          <div className="ps-topbar-context">{contextText}</div>
+        )}
+
+        <div className="ps-topbar-right">
+          {loggedInUser ? (
+            <>
+              <span className="ps-topbar-greeting">Hi {loggedInUser.first_name}</span>
+              <input
+                ref={this.fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={this.handlePhotoSelected}
+              />
+              <button type="button" className="ps-btn" onClick={this.handleAddPhotoClick}>
+                Add Photo
+              </button>
+              <button type="button" className="ps-btn" onClick={this.handleLogout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <span className="ps-topbar-greeting">Please Login</span>
+          )}
+        </div>
+      </header>
     );
   }
 }
