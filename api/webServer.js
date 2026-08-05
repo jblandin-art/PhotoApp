@@ -199,16 +199,20 @@ app.use(async (req, res, next) => {
 
 // Authentication middleware: protect all routes except login/logout/test
 app.use((req, res, next) => {
+  const path = req.path.replace(/\/$/, "");
+
   if (
-    req.path === "/admin/login" ||
-    req.path === "/admin/logout" ||
-    (req.path === "/user" && req.method === "POST") ||
-    req.path.startsWith("/test") ||
-    req.path === "/"
+    path === "/admin/login" ||
+    path === "/admin/logout" ||
+    (path === "/user" && req.method === "POST") ||
+    path.startsWith("/test") ||
+    path === "/"
   ) {
     return next();
   }
   if (!req.session.user) {
+    console.log("Unauthorized access attempt to", req.path, req.method, "without a valid session"
+    )
     return res.status(401).send("Unauthorized");
   }
   return next();
