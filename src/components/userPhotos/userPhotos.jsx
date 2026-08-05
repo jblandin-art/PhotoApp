@@ -245,7 +245,13 @@ class UserPhotos extends React.Component {
 
   render() {
     return (
+      
       <div className="user-photos-container">
+        {this.state.photos.length === 0 && (
+          <Typography variant="body1" style={{ marginTop: '20px' }}>
+            No photos to display.
+          </Typography>
+        )}
         {this.state.photos.map((photo) => {
           const suggestions = this.state.mentionSuggestions[photo._id] || [];
           const commentText = this.state.newComments[photo._id] || '';

@@ -573,7 +573,19 @@ app.post("/admin/logout", function (request, response) {
 });
 
 app.post("/user", async function (request, response) {
-  const { login_name, password, first_name, last_name } = request.body;
+  function toTitleCase(str) {
+    if (!str) return str;
+
+    return str
+      .trim()
+      .toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+  const { login_name, password } = request.body;
+  const first_name = toTitleCase(request.body.first_name);
+  const last_name = toTitleCase(request.body.last_name);
+
 
   if (!login_name) {
     return response.status(400).send("Missing login_name");
