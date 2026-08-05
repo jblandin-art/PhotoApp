@@ -5,6 +5,10 @@
       "destination": "/api/webServer?path=/me"
     },
     {
+      "source": "/admin/:path*",
+      "destination": "/api/webServer?path=/admin/:path*"
+    },
+    {
       "source": "/user/:path*",
       "destination": "/api/webServer?path=/user/:path*"
     },
@@ -23,6 +27,10 @@
     {
       "source": "/commentsOfPhoto/:path*",
       "destination": "/api/webServer?path=/commentsOfPhoto/:path*"
+    },
+    {
+      "source": "/photos/:path*",
+      "destination": "/api/webServer?path=/photos/:path*"
     },
     {
       "source": "/test/:path*",
