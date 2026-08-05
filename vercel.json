@@ -2,31 +2,31 @@
   "rewrites": [
     {
       "source": "/me",
-      "destination": "/api/webServer.js?path=/me"
+      "destination": "/api/webServer?path=/me"
     },
     {
       "source": "/user/:path*",
-      "destination": "/api/webServer.js?path=/user/:path*"
+      "destination": "/api/webServer?path=/user/:path*"
     },
     {
       "source": "/users/:path*",
-      "destination": "/api/webServer.js?path=/users/:path*"
+      "destination": "/api/webServer?path=/users/:path*"
     },
     {
       "source": "/photosOfUser/:path*",
-      "destination": "/api/webServer.js?path=/photosOfUser/:path*"
+      "destination": "/api/webServer?path=/photosOfUser/:path*"
     },
     {
       "source": "/photosWithMentions/:path*",
-      "destination": "/api/webServer.js?path=/photosWithMentions/:path*"
+      "destination": "/api/webServer?path=/photosWithMentions/:path*"
     },
     {
       "source": "/commentsOfPhoto/:path*",
-      "destination": "/api/webServer.js?path=/commentsOfPhoto/:path*"
+      "destination": "/api/webServer?path=/commentsOfPhoto/:path*"
     },
     {
       "source": "/test/:path*",
-      "destination": "/api/webServer.js?path=/test/:path*"
+      "destination": "/api/webServer?path=/test/:path*"
     }
   ]
 }
