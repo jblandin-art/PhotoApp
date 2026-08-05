@@ -1,13 +1,32 @@
 {
   "rewrites": [
-    { "source": "/admin/:path*", "destination": "/api/webServer" },
-    { "source": "/user/:path*", "destination": "/api/webServer" },
-    { "source": "/users/:path*", "destination": "/api/webServer" },
-    { "source": "/photosOfUser/:path*", "destination": "/api/webServer" },
-    { "source": "/photosWithMentions/:path*", "destination": "/api/webServer" },
-    { "source": "/commentsOfPhoto/:path*", "destination": "/api/webServer" },
-    { "source": "/photos/:path*", "destination": "/api/webServer" },
-    { "source": "/me", "destination": "/api/webServer" },
-    { "source": "/test/:path*", "destination": "/api/webServer" }
+    {
+      "source": "/me",
+      "destination": "/api/webServer.js?path=/me"
+    },
+    {
+      "source": "/user/:path*",
+      "destination": "/api/webServer.js?path=/user/:path*"
+    },
+    {
+      "source": "/users/:path*",
+      "destination": "/api/webServer.js?path=/users/:path*"
+    },
+    {
+      "source": "/photosOfUser/:path*",
+      "destination": "/api/webServer.js?path=/photosOfUser/:path*"
+    },
+    {
+      "source": "/photosWithMentions/:path*",
+      "destination": "/api/webServer.js?path=/photosWithMentions/:path*"
+    },
+    {
+      "source": "/commentsOfPhoto/:path*",
+      "destination": "/api/webServer.js?path=/commentsOfPhoto/:path*"
+    },
+    {
+      "source": "/test/:path*",
+      "destination": "/api/webServer.js?path=/test/:path*"
+    }
   ]
 }

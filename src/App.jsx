@@ -26,15 +26,21 @@ class PhotoShare extends React.Component {
       checkedLogin: false,
       photoRefreshCounter: 0
     };
+
+    axios.defaults.withCredentials = true;
   }
+  
 
   componentDidMount() {
+    console.log("componentDidMount running");
     // Check if user is already logged in (session) using /me endpoint
-    axios.get('/me')
+    axios.get('/me', { withCredentials: true })
       .then((response) => {
+        console.log("User is logged in:", response.data);
         this.setState({ loggedInUser: response.data, checkedLogin: true });
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log("User is not logged in:", error.response?.data || error.message);
         this.setState({ loggedInUser: null, checkedLogin: true });
       });
   }
@@ -53,6 +59,8 @@ class PhotoShare extends React.Component {
         this.setState({ loggedInUser: null });
       });
   };
+  
+  
 
   handlePhotoUploaded = () => {
     this.setState((prevState) => ({
@@ -63,6 +71,7 @@ class PhotoShare extends React.Component {
   isLoggedIn = () => {
     return !!this.state.loggedInUser;
   };
+
 
 
   render() {
