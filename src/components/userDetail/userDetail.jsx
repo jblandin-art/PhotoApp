@@ -94,19 +94,19 @@ return this.state.user ? (
     <div>
         <TextField id ="location" label = "Location" variant= "outlined" disabled fullWidth
       margin ="normal" 
-      value={this.state.user.location}/>
+     value={this.state.user.location ?? ""}/>
     </div>
 
     <div>
         <TextField id ="description" label = "Description" variant= "outlined" disabled fullWidth
       margin ="normal" 
-      value={this.state.user.description}/>
+      value={this.state.user.description ?? ""}/>
     </div>
 
     <div>
         <TextField id ="occupation" label = "Occupation" variant= "outlined" disabled fullWidth
       margin ="normal" 
-      value={this.state.user.occupation}/>
+      value={this.state.user.occupation ?? ""}/>
     </div>
     <div>
       <Typography variant="subtitle2" color="textSecondary">
