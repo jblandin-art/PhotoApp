@@ -7,27 +7,33 @@
   z-index: 100;
   background-color: #1976d2;
   color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 25px;
+
   display: grid;
   grid-template-columns: 320px 1fr 320px;
   align-items: center;
+
+  gap: 12px;
+  padding: 0 25px;
 }
 
 .ps-topbar-left {
   justify-self: start;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
   font-size: 1.5rem;
-
   font-weight: 600;
-
   white-space: nowrap;
 }
 
 .ps-topbar-context {
-  justify-self: center;
+  min-width: 0;
+
+  justify-self: stretch;
   text-align: center;
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -35,24 +41,29 @@
 
 .ps-topbar-right {
   justify-self: end;
+
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+
+  min-width: 0;
 }
 
 .ps-btn {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255,255,255,.6);
   color: #fff;
   border-radius: 6px;
   padding: 6px 10px;
-  font-size: 0.8rem;
+  font-size: .8rem;
   cursor: pointer;
 }
-.ps-btn:hover { background: rgba(255, 255, 255, 0.12); }
 
-/* Hamburger — only meaningful below the desktop breakpoint,
-   since the sidebar is always visible above it */
+.ps-btn:hover {
+  background: rgba(255,255,255,.12);
+}
+
 .ps-hamburger {
   display: flex;
   flex-direction: column;
@@ -65,6 +76,7 @@
   cursor: pointer;
   padding: 0;
 }
+
 .ps-hamburger span {
   display: block;
   height: 2px;
@@ -72,12 +84,54 @@
   border-radius: 1px;
 }
 
-/* Narrow phones: drop the context line and greeting text to avoid crowding */
-@media (max-width: 480px) {
-  .ps-topbar-context { display: none; }
-  .ps-topbar-greeting { display: none; }
+/* ---------- Tablet / Phone ---------- */
+
+@media (max-width: 767px) {
+  .ps-topbar {
+    grid-template-columns: auto 1fr auto;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .ps-topbar-left {
+    font-size: 1.2rem;
+  }
+
+  .ps-topbar-context {
+    font-size: .95rem;
+  }
+
+  .ps-topbar-right {
+    gap: 6px;
+  }
+
+  .ps-btn {
+    padding: 4px 8px;
+    font-size: .75rem;
+  }
 }
 
+/* Very narrow phones */
+
+@media (max-width: 480px) {
+  .ps-topbar-context {
+    display: none;
+  }
+
+  .ps-topbar-greeting {
+    display: none;
+  }
+
+  .ps-btn {
+    padding: 4px 6px;
+    font-size: .7rem;
+  }
+}
+
+/* Desktop */
+
 @media (min-width: 768px) {
-  .ps-hamburger { display: none; }
+  .ps-hamburger {
+    display: none;
+  }
 }
