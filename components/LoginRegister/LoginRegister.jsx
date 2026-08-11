@@ -60,9 +60,13 @@ class LoginRegister extends React.Component {
 				})
 			.catch((err) => {
 				let msg = 'Login failed';
-				if (err.response && err.response.data) {
-					msg = err.response.data;
+
+				if (err.response?.data?.detail) {
+					msg = err.response.data.detail;
+				} else if (err.response?.data?.error) {
+					msg = err.response.data.error;
 				}
+
 				this.setState({ loginError: msg });
 			});
 	};
@@ -119,9 +123,13 @@ class LoginRegister extends React.Component {
 			})
 			.catch((err) => {
 				let msg = 'Registration failed';
-				if (err.response && err.response.data) {
-					msg = err.response.data;
+
+				if (err.response?.data?.detail) {
+					msg = err.response.data.detail;
+				} else if (err.response?.data?.error) {
+					msg = err.response.data.error;
 				}
+
 				this.setState({ regError: msg });
 			});
 	};

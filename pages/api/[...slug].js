@@ -61,7 +61,6 @@ async function uploadPhotoToS3(fileBuffer, filename, contentType) {
     Key: filename,
     Body: fileBuffer,
     ContentType: contentType || "application/octet-stream",
-    ACL: "public-read",
   });
 
   await s3Client.send(command);
@@ -721,6 +720,12 @@ app.post("/photos/new", function (request, response) {
     }
   });
 });
+
+export const config = {
+    api: {
+        bodyParser: false,
+    },
+};
 
 export default async function handler(req, res) {
   console.log("[handler] incoming url:", req.url);
