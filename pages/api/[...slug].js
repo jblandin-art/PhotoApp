@@ -34,9 +34,13 @@ const path = require("path");
 
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const multer = require("multer");
 
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+} = require("@aws-sdk/client-s3");
+
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const MongoStore = require("connect-mongo").default || require("connect-mongo");
 
@@ -55,24 +59,17 @@ const s3Client = new S3Client({
 
 const S3_BUCKET = process.env.S3_BUCKET;
 
-async function uploadPhotoToS3(fileBuffer, filename, contentType) {
+async function createPhotoUploadUrl(filename, contentType) {
   const command = new PutObjectCommand({
     Bucket: S3_BUCKET,
     Key: filename,
-    Body: fileBuffer,
     ContentType: contentType || "application/octet-stream",
   });
 
-  await s3Client.send(command);
-
-  const region = process.env.AWS_REGION || "us-east-1";
-  return `https://${S3_BUCKET}.s3.${region}.amazonaws.com/${encodeURIComponent(filename)}`;
+  return getSignedUrl(s3Client, command, {
+    expiresIn: 300,
+  });
 }
-
-// Express session and other new modules
-const processFormBody = multer({
-  storage: multer.memoryStorage(),
-}).single("uploadedphoto");
 
 app.use(bodyParser.json());
 
@@ -678,54 +675,96 @@ app.post("/commentsOfPhoto/:photo_id", async function (request, response) {
   }
 });
 
-app.post("/photos/new", function (request, response) {
-  console.log("POST /user body:", request.body);
+app.post("/photos/upload-url", async function (request, response) {
   if (!request.session.user) {
     return response.status(401).send("Unauthorized");
   }
 
-  const user_id = request.session.user._id;
+  const { filename, contentType } = request.body;
 
-  return processFormBody(request, response, async function (err) {
-    if (err || !request.file) {
-      console.error("Error in /photos/new: No file provided", err);
-      return response.status(400).send("photo required");
-    }
+  if (!filename) {
+    return response.status(400).send("Missing filename");
+  }
 
-    if (!S3_BUCKET || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      return response
-        .status(500)
-        .send(
-          "S3 upload is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and S3_BUCKET."
-        );
-    }
+  if (!contentType || !contentType.startsWith("image/")) {
+    return response.status(400).send("Invalid image type");
+  }
 
-    const timestamp = new Date().valueOf();
-    const filename = "U" + String(timestamp) + request.file.originalname;
+  if (
+    !S3_BUCKET ||
+    !process.env.AWS_ACCESS_KEY_ID ||
+    !process.env.AWS_SECRET_ACCESS_KEY
+  ) {
+    return response
+      .status(500)
+      .send(
+        "S3 upload is not configured. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and S3_BUCKET."
+      );
+  }
 
-    try {
-      const imageUrl = await uploadPhotoToS3(request.file.buffer, filename, request.file.mimetype);
+  try {
+    const timestamp = Date.now();
 
-      await Photo.create({
-        file_name: imageUrl,
-        date_time: new Date(),
-        user_id: new mongoose.Types.ObjectId(user_id),
-        comments: [],
-      });
+    // Remove path information from the original filename.
+    const safeFilename = path.basename(filename);
 
-      return response.status(200).send("Photo uploaded successfully");
-    } catch (err2) {
-      console.error("Error uploading photo to S3:", err2);
-      return response.status(500).send(err2 && err2.message ? err2.message : "Database error");
-    }
-  });
+    const s3Key = `photos/U${timestamp}-${safeFilename}`;
+
+    const uploadUrl = await createPhotoUploadUrl(
+      s3Key,
+      contentType
+    );
+
+    const region = process.env.AWS_REGION || "us-east-1";
+
+    const fileUrl =
+      `https://${S3_BUCKET}.s3.${region}.amazonaws.com/` +
+      encodeURIComponent(s3Key).replace(/%2F/g, "/");
+
+    return response.status(200).json({
+      uploadUrl,
+      fileUrl,
+      fileName: s3Key,
+    });
+  } catch (err) {
+    console.error("Error creating S3 upload URL:", err);
+
+    return response
+      .status(500)
+      .send("Could not create upload URL");
+  }
 });
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
+app.post("/photos/new", async function (request, response) {
+  if (!request.session.user) {
+    return response.status(401).send("Unauthorized");
+  }
+
+  const { fileName, fileUrl } = request.body;
+
+  if (!fileName || !fileUrl) {
+    return response.status(400).send("Photo information required");
+  }
+
+  const user_id = request.session.user._id;
+
+  try {
+    await Photo.create({
+      file_name: fileUrl,
+      date_time: new Date(),
+      user_id: new mongoose.Types.ObjectId(user_id),
+      comments: [],
+    });
+
+    return response.status(200).send("Photo uploaded successfully");
+  } catch (err) {
+    console.error("Error creating photo record:", err);
+
+    return response
+      .status(500)
+      .send("Database error");
+  }
+});
 
 export default async function handler(req, res) {
   console.log("[handler] incoming url:", req.url);

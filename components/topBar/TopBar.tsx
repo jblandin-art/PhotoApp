@@ -89,24 +89,59 @@ export default function TopBar({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("uploadedphoto", file);
-
     try {
-      await axios.post("/api/photos/new", formData, {
-        withCredentials: true,
-      });
-
-      onPhotoUploaded?.();
-
-      if (loggedInUser) {
-        router.push(`/photos/${loggedInUser._id}`);
-      }
-    } catch (err) {
-      console.error("Error uploading photo:", err);
-    } finally {
-      event.target.value = "";
+  // 1. Ask the server for a temporary S3 upload URL
+  const { data } = await axios.post(
+    "/api/photos/upload-url",
+    {
+      filename: file.name,
+      contentType: file.type,
+    },
+    {
+      withCredentials: true,
     }
+  );
+
+  // 2. Upload the actual image directly to S3
+  await axios.put(data.uploadUrl, file, {
+    headers: {
+      "Content-Type": file.type,
+    },
+  });
+
+  // 3. Tell our server to create the MongoDB Photo record
+  await axios.post(
+    "/api/photos/new",
+    {
+      fileName: data.fileName,
+      fileUrl: data.fileUrl,
+    },
+    {
+      withCredentials: true,
+    }
+  );
+
+  onPhotoUploaded?.();
+
+  if (loggedInUser) {
+      router.push(`/photos/${loggedInUser._id}`);
+    }
+  } catch (err) {
+    console.error("Error uploading photo:", err);
+
+    let message = "Photo upload failed.";
+
+    if (axios.isAxiosError(err)) {
+      message =
+        err.response?.data ||
+        err.message ||
+        message;
+    }
+
+    alert(message);
+  } finally {
+    event.target.value = "";
+  }
   };
   
 
