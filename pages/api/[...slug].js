@@ -35,6 +35,8 @@ const path = require("path");
 const session = require("express-session");
 const bodyParser = require("body-parser");
 
+const bcrypt = require("bcrypt");
+
 const {
   S3Client,
   PutObjectCommand,
@@ -542,7 +544,10 @@ app.post("/admin/login", async function (request, response) {
     if (!user) {
       return response.status(400).send("Invalid login_name");
     }
-    if (user.password !== password) {
+
+    const passwordMatches = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatches) {
       return response.status(400).send("Invalid password");
     }
 
@@ -556,6 +561,7 @@ app.post("/admin/login", async function (request, response) {
       first_name: user.first_name,
     });
   } catch (err) {
+    console.error("Error in POST /admin/login:", err);
     return response.status(500).send("Server error");
   }
 });
@@ -577,12 +583,11 @@ app.post("/user", async function (request, response) {
       .trim()
       .toLowerCase()
       .replace(/\b\w/g, char => char.toUpperCase());
-    }
+  }
 
   const { login_name, password } = request.body;
   const first_name = toTitleCase(request.body.first_name);
   const last_name = toTitleCase(request.body.last_name);
-
 
   if (!login_name) {
     return response.status(400).send("Missing login_name");
@@ -599,13 +604,16 @@ app.post("/user", async function (request, response) {
 
   try {
     const existingUser = await User.findOne({ login_name });
+
     if (existingUser) {
       return response.status(400).send("login_name already taken");
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await User.create({
       login_name,
-      password,
+      password: hashedPassword,
       first_name,
       last_name,
     });
