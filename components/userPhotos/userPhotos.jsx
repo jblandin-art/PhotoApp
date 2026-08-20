@@ -266,7 +266,12 @@ class UserPhotos extends React.Component {
                 <img
                   src={photo.file_name && photo.file_name.startsWith('http') ? photo.file_name : `/images/${photo.file_name}`}
                   alt={photo.file_name}
-                  style={{ width: '100%', marginTop: '10px' }}
+                  style={{
+                  width: '100%',
+                  maxHeight: '70vh',
+                  objectFit: 'contain', 
+                  marginTop: '10px',
+                }}
                 />
 
                 <Divider style={{ margin: '15px 0' }} />
