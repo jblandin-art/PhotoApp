@@ -201,9 +201,13 @@ export default function TopBar({
             </button>
           </>
         ) : (
-          <span className="ps-topbar-greeting">
-            Please Login
-          </span>
+          <button
+            type="button"
+            className="ps-btn"
+            onClick={() => router.push("/login-register")}
+          >
+            Login / Register
+          </button>
         )}
       </div>
     </header>
