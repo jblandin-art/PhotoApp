@@ -95,17 +95,19 @@ export default function PhotoShareLayout({
         />
 
         <div className="ps-body">
-          <aside
-            className={`ps-sidebar ${
-              sidebarOpen ? "ps-sidebar--open" : ""
-            }`}
-          >
-            <div className="ps-panel">
-              <UserList
-                onNavigate={() => setSidebarOpen(false)}
-              />
-            </div>
-          </aside>
+          {!isLoginPage && (
+            <aside
+              className={`ps-sidebar ${
+                sidebarOpen ? "ps-sidebar--open" : ""
+              }`}
+            >
+              <div className="ps-panel">
+                <UserList
+                  onNavigate={() => setSidebarOpen(false)}
+                />
+              </div>
+            </aside>
+          )}
 
           <main className={`${isLoginPage ? "ps-main--auth" : "ps-main"}`}>
             {isLoginPage ? (
