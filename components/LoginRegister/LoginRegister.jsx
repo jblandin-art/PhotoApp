@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button, TextField, Typography, Paper, Grid, Tabs, Tab, Box } from '@mui/material';
 import axios from 'axios';
 
@@ -180,6 +180,16 @@ class LoginRegister extends React.Component {
 											{this.state.loginError}
 										</Typography>
 									)}
+									<Button
+										component={Link}
+										href="/users"
+										variant="outlined"
+										color="primary"
+										fullWidth
+										style={{ marginTop: 16, backgroundColor: '#fff' }}
+									>
+										Continue as a Guest
+									</Button>
 									<Button id="login-submit-btn" type="submit" variant="contained" color="primary" fullWidth style={{ marginTop: 16 }}>
 										Log In
 									</Button>
