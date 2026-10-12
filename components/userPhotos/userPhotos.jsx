@@ -304,7 +304,7 @@ class UserPhotos extends React.Component {
                     : <Typography variant="body2">No comments yet.</Typography>}
                 </List>
 
-                {/* Comment input with @mention autocomplete */}
+                {this.props.loggedInUser && (
                 <div className="comment-form-shell" style={{ position: 'relative' }}>
                   <form
                     className="comment-form"
@@ -326,7 +326,6 @@ class UserPhotos extends React.Component {
                     <input className="comment-form-button" type="submit" value="Submit" />
                   </form>
 
-                  {/* Autocomplete dropdown */}
                   {suggestions.length > 0 && (
                     <ul className="mention-dropdown">
                       {suggestions.map((s) => (
@@ -341,6 +340,7 @@ class UserPhotos extends React.Component {
                     </ul>
                   )}
                 </div>
+                )}
               </CardContent>
             </Card>
           );

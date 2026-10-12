@@ -200,7 +200,7 @@ app.use(async (req, res, next) => {
   }
 });
 
-// Authentication middleware: protect all routes except login/logout/test
+// Read endpoints are public; mutations remain protected by the session.
 app.use((req, res, next) => {
   const path = req.path.replace(/\/$/, "");
 
@@ -209,7 +209,8 @@ app.use((req, res, next) => {
     path === "/admin/logout" ||
     (path === "/user" && req.method === "POST") ||
     path.startsWith("/test") ||
-    path === "/"
+    path === "/" ||
+    req.method === "GET"
   ) {
     return next();
   }

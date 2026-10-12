@@ -48,24 +48,6 @@ export default function PhotoShareLayout({
       });
   }, []);
 
-  // Protect routes that require login
-  useEffect(() => {
-    if (!checkedLogin) return;
-
-    const protectedPaths = [
-      "/users",
-      "/photos",
-    ];
-
-    const requiresAuth = pathname
-  ? protectedPaths.some((path) => pathname.startsWith(path))
-  : false;
-
-    if (requiresAuth && !loggedInUser) {
-      router.push("/login-register");
-    }
-  }, [checkedLogin, loggedInUser, pathname, router]);
-
   const handleLogin = (user: User) => {
     setLoggedInUser(user);
   };
@@ -113,19 +95,17 @@ export default function PhotoShareLayout({
         />
 
         <div className="ps-body">
-          {loggedInUser && (
-            <aside
-              className={`ps-sidebar ${
-                sidebarOpen ? "ps-sidebar--open" : ""
-              }`}
-            >
-              <div className="ps-panel">
-                <UserList
-                  onNavigate={() => setSidebarOpen(false)}
-                />
-              </div>
-            </aside>
-          )}
+          <aside
+            className={`ps-sidebar ${
+              sidebarOpen ? "ps-sidebar--open" : ""
+            }`}
+          >
+            <div className="ps-panel">
+              <UserList
+                onNavigate={() => setSidebarOpen(false)}
+              />
+            </div>
+          </aside>
 
           <main className={`${isLoginPage ? "ps-main--auth" : "ps-main"}`}>
             {isLoginPage ? (
